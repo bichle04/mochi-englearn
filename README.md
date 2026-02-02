@@ -15,7 +15,6 @@ Một ứng dụng học tiếng Anh hiện đại, được xây dựng với E
 
 - **Khóa học đa dạng**: Các khóa học được phân loại theo cấp độ (Beginner, Intermediate, Advanced, Expert) với giao diện gradient đẹp mắt.
 - **Quản lý từ vựng**: Lưu trữ từ vựng cá nhân, đánh dấu yêu thích, và theo dõi lịch sử ôn tập.
-- **IELTS Speaking**: 
 - **Bài tập tương tác**:
 
 ```
