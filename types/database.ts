@@ -93,6 +93,7 @@ export interface SpeakingHistory {
   overall_score?: number;
   details?: any;
   general_suggestions?: any;
+  mode: number; // 0: Practice, 1: Real Exam
   speaking_parts?: SpeakingPart; // For joined query
 }
 

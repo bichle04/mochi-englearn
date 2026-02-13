@@ -24,6 +24,7 @@ export const speakingService = {
         )
       `)
       .eq('user_id', userId)
+      .eq('mode', 0) // Only get practice history
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -36,9 +37,10 @@ export const speakingService = {
 
   async getTestHistory(userId: string) {
     const { data, error } = await supabase
-      .from('speaking_test_history')
+      .from('speaking_history')
       .select('*')
       .eq('user_id', userId)
+      .eq('mode', 1) // Exam mode
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -67,20 +69,17 @@ export const speakingService = {
   },
 
   async getHistoryItem(id: number, type: 'practice' | 'test') {
-    const table = type === 'practice' ? 'speaking_history' : 'speaking_test_history';
+    // Both practice and test are now in speaking_history
+    const table = 'speaking_history';
 
-    let query = supabase.from(table).select('*').eq('id', id).single();
-
-    if (type === 'practice') {
-      query = supabase.from(table).select(`
-            *,
-            speaking_parts (
-                id,
-                title,
-                part
-            )
-        `).eq('id', id).single();
-    }
+    let query = supabase.from(table).select(`
+        *,
+        speaking_parts (
+            id,
+            title,
+            part
+        )
+    `).eq('id', id).single();
 
     const { data, error } = await query;
 
@@ -282,8 +281,9 @@ export const speakingService = {
   async saveSpeakingFeedback(
     userId: string,
     part: number,
-    partId: number,
-    feedback: any
+    partId: number | null,
+    feedback: any,
+    mode: number = 0 // Default to 0 (Practice)
   ) {
     try {
       console.log('[saveSpeakingFeedback] Saving feedback for user:', userId);
@@ -328,6 +328,7 @@ export const speakingService = {
             user_id: userId,
             part: part,
             part_id: partId,
+            mode: mode,
             overall_score: feedback.overall_score,
             details: detailsData,
             general_suggestions: generalSuggestions,
