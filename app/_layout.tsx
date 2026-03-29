@@ -15,6 +15,11 @@ import {
   WorkSans_600SemiBold,
   WorkSans_700Bold,
 } from "@expo-google-fonts/work-sans";
+import {
+  Lexend_400Regular,
+  Lexend_600SemiBold,
+  Lexend_700Bold,
+} from "@expo-google-fonts/lexend";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
@@ -34,6 +39,9 @@ export default function RootLayout() {
     WorkSans_400Regular,
     WorkSans_600SemiBold,
     WorkSans_700Bold,
+    Lexend_400Regular,
+    Lexend_600SemiBold,
+    Lexend_700Bold,
   });
 
   if (!loaded) {
