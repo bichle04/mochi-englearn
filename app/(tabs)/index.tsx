@@ -20,15 +20,15 @@ export default function HomeScreen() {
   const { stats, weeklyProgress } = useUserStats();
   // We use currentStreak from user stats if available, else static default
   const currentStreak = user ? stats?.currentStreak || 0 : 0;
-  
-  const displayName = user?.fullName || 
-                      user?.email?.split('@')[0] || 
-                      "Ngọc";
+
+  const displayName = user?.fullName ||
+    user?.email?.split('@')[0] ||
+    "Ngọc";
 
   const renderStreakDays = () => {
     const daysArr = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
     const localDay = new Date().getDay();
-    const currentDayIndex = localDay === 0 ? 6 : localDay - 1; 
+    const currentDayIndex = localDay === 0 ? 6 : localDay - 1;
 
     return (
       <View style={styles.streakDaysRow}>
@@ -44,7 +44,7 @@ export default function HomeScreen() {
           if (weeklyProgress && weeklyProgress.length > 0) {
             const dayData = weeklyProgress.find((p) => p.day === dayNameToEnglish[dayName]);
             if (dayData && (dayData.words > 0 || dayData.minutes > 0)) {
-               isFire = true;
+              isFire = true;
             }
           }
 
@@ -58,7 +58,7 @@ export default function HomeScreen() {
           } else if (index < currentDayIndex) {
             // Reliable fallback for past days based on current streak
             if ((currentDayIndex - index) <= currentStreak) {
-               isFire = true;
+              isFire = true;
             }
           }
 
@@ -100,7 +100,7 @@ export default function HomeScreen() {
           <View style={styles.greetingContainer}>
             <Text style={styles.greetingText}>Chào mừng trở lại,</Text>
             <Text style={styles.usernameText}>
-              Chào {displayName}!
+              {displayName}!
             </Text>
           </View>
         </View>
