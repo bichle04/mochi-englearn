@@ -240,7 +240,10 @@ export default function RegisterScreen() {
               onPress={handleRegister}
               disabled={isLoading || !agreed}
             >
-              <Text style={styles.registerButtonText}>
+              <Text style={[
+                styles.registerButtonText,
+                (!agreed || isLoading) && styles.disabledButtonText
+              ]}>
                 {isLoading ? "Đang xử lý..." : "Đăng ký"}
               </Text>
             </TouchableOpacity>
@@ -389,7 +392,7 @@ const styles = StyleSheet.create({
   },
   registerButton: {
     width: "100%",
-    backgroundColor: "#CDCCD1",
+    backgroundColor: "#4CAF50",
     borderRadius: 25,
     paddingVertical: 14,
     alignItems: "center",
@@ -402,6 +405,9 @@ const styles = StyleSheet.create({
   registerButtonText: {
     fontSize: 16,
     fontFamily: "WorkSans_700Bold",
+    color: "#FFFFFF",
+  },
+  disabledButtonText: {
     color: "#696674",
   },
   loginContainer: {
