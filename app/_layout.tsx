@@ -4,6 +4,17 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
+import {
+  Nunito_400Regular,
+  Nunito_700Bold,
+  Nunito_800ExtraBold,
+  Nunito_900Black,
+} from "@expo-google-fonts/nunito";
+import {
+  WorkSans_400Regular,
+  WorkSans_600SemiBold,
+  WorkSans_700Bold,
+} from "@expo-google-fonts/work-sans";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
@@ -16,6 +27,13 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    Nunito_400Regular,
+    Nunito_700Bold,
+    Nunito_800ExtraBold,
+    Nunito_900Black,
+    WorkSans_400Regular,
+    WorkSans_600SemiBold,
+    WorkSans_700Bold,
   });
 
   if (!loaded) {

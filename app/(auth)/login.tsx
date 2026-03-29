@@ -1,7 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
+import { Eye, EyeOff } from "lucide-react-native";
 import { useState } from "react";
 import {
   Alert,
@@ -11,7 +10,27 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
+import Svg, { Path } from "react-native-svg";
+
+const GoogleIcon = () => (
+  <Svg width="26" height="26" viewBox="0 0 48 48">
+    <Path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+    <Path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+    <Path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+    <Path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+  </Svg>
+);
+
+const FacebookIcon = () => (
+  <Svg width="26" height="26" viewBox="0 0 256 256">
+    <Path fill="#1877F2" d="M256,128C256,57.308,198.692,0,128,0C57.308,0,0,57.308,0,128c0,63.888,46.808,116.843,108,126.445V165H75.5v-37H108V99.8c0-32.08,19.11-49.8,48.348-49.8C170.352,50,185,52.5,185,52.5v33.5h-16.15c-15.328,0-20.85,9.504-20.85,20.024V128h35.5l-5.675,37H148v89.445c61.192-9.602,108-62.556,108-126.445"/>
+    <Path fill="#FFFFFF" d="M177.825,165L183.5,128H148v-24.176C148,93.304,153.522,83.8,168.85,83.8H185V50.3c0,0-14.648-2.5-28.652-2.5C127.11,47.8,108,65.52,108,97.6V128H75.5v37H108v89.445C114.56,255.46,121.148,256,128,256z"/>
+  </Svg>
+);
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -47,9 +66,8 @@ export default function LoginScreen() {
           errorMessage = "Quá nhiều lần thử. Vui lòng thử lại sau";
         }
 
-        Alert.alert("Lỗi đăng nhập", errorMessage);
+        Alert.alert("Lỗi", errorMessage);
       } else {
-        // Đăng nhập thành công, router sẽ tự động chuyển đến tabs
         router.replace("/(tabs)");
       }
     } catch (err) {
@@ -67,91 +85,102 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <LinearGradient
-        colors={["#FF6B9D", "#FF8C42"]}
-        style={styles.header}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+      <View style={styles.topSection}>
+        <Image
+          source={require("../../assets/images/mascot/mochi_transparent.png")}
+          style={styles.mascot}
+          resizeMode="contain"
+        />
+        <Text style={styles.appName}>
+          MOCHI
+        </Text>
+      </View>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1, zIndex: 2 }}
       >
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Welcome Back! 🌟</Text>
-          <Text style={styles.headerSubtitle}>
-            Sign in to continue learning with Mochi & Michi!
-          </Text>
-          <View style={styles.mascotContainer}>
-            <Image
-              source={require("../../assets/images/Logo_MochiApp.png")}
-              style={styles.logo}
-              resizeMode="contain"
+        <View style={styles.bottomSection}>
+          <ScrollView 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+          bounces={false}
+        >
+          <Text style={styles.title}>Đăng nhập</Text>
+          <Text style={styles.subtitle}>để tiếp tục vươn tới mục tiêu!</Text>
+
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor="#95A5A6"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
+              editable={!isLoading}
             />
           </View>
-        </View>
-      </LinearGradient>
 
-      {/* Form */}
-      <View style={styles.formContainer}>
-        <View style={styles.inputContainer}>
-          <Mail size={20} color="#7F8C8D" />
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor="#95A5A6"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-            editable={!isLoading}
-          />
-        </View>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={[styles.input, { flex: 1 }]}
+              placeholder="Mật khẩu"
+              placeholderTextColor="#95A5A6"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+              editable={!isLoading}
+            />
+            <TouchableOpacity 
+              onPress={() => setShowPassword(!showPassword)}
+              style={styles.eyeIconContainer}
+            >
+              {showPassword ? (
+                <Eye size={20} color="#7F8C8D" />
+              ) : (
+                <EyeOff size={20} color="#7F8C8D" />
+              )}
+            </TouchableOpacity>
+          </View>
 
-        <View style={styles.inputContainer}>
-          <Lock size={20} color="#7F8C8D" />
-          <TextInput
-            style={[styles.input, { flex: 1 }]}
-            placeholder="Password"
-            placeholderTextColor="#95A5A6"
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={setPassword}
-            editable={!isLoading}
-          />
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-            {showPassword ? <EyeOff size={20} color="#7F8C8D" /> : <Eye size={20} color="#7F8C8D" />}
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity
-          style={styles.forgotPasswordLink}
-          onPress={() => router.push("./forgot-password")}
-        >
-          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.loginButton, isLoading && styles.disabledButton]}
-          onPress={handleLogin}
-          disabled={isLoading}
-        >
-          <LinearGradient
-            colors={["#FF6B9D", "#FF8C42"]}
-            style={styles.buttonGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+          <TouchableOpacity
+            style={styles.forgotPasswordLink}
+            onPress={() => router.push("./forgot-password")}
           >
-            <Text style={styles.buttonText}>
-              {isLoading ? "Đang đăng nhập..." : "Sign In"}
-            </Text>
-          </LinearGradient>
-        </TouchableOpacity>
-
-        <View style={styles.loginPrompt}>
-          <Text style={styles.loginText}>Don&apos;t have an account? </Text>
-          <TouchableOpacity onPress={() => router.push("./register")}>
-            <Text style={styles.loginLink}>Sign Up</Text>
+            <Text style={styles.forgotPasswordText}>Quên mật khẩu?</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.loginButton, isLoading && styles.disabledButton]}
+            onPress={handleLogin}
+            disabled={isLoading}
+          >
+            <Text style={styles.loginButtonText}>
+              {isLoading ? "Đang xử lý..." : "Đăng nhập"}
+            </Text>
+          </TouchableOpacity>
+
+          <Text style={styles.orText}>hoặc tiếp tục với</Text>
+
+          <View style={styles.socialContainer}>
+            <TouchableOpacity style={styles.socialButton}>
+              <GoogleIcon />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialButton}>
+              <FacebookIcon />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.signupContainer}>
+            <Text style={styles.signupText}>Chưa có tài khoản? </Text>
+            <TouchableOpacity onPress={() => router.push("./register")}>
+              <Text style={styles.signupLink}>Đăng ký ngay!</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -159,65 +188,71 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: "#FFFFFF", 
   },
-  header: {
-    paddingTop: 60,
-    paddingBottom: 30,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-  },
-  headerContent: {
+  topSection: {
+    height: "35%",
+    backgroundColor: "#4CAF50",
+    justifyContent: "center",
     alignItems: "center",
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-    marginBottom: 8,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: "#FFFFFF",
-    opacity: 0.9,
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  mascotContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    borderRadius: 25,
-    padding: 10,
+    paddingTop: 20, 
   },
   mascot: {
-    fontSize: 40,
+    width: 125,
+    height: 125,
+    marginBottom: 4,
   },
-  formContainer: {
+  appName: {
+    fontSize: 34,
+    fontFamily: "Nunito_900Black",
+    color: "#FFFFFF",
+    letterSpacing: 2,
+  },
+  bottomSection: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 40,
-    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    marginTop: -20,
+    overflow: "hidden", 
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 32,
+    paddingBottom: 24,
+    flexGrow: 1,
+  },
+  title: {
+    fontSize: 24,
+    fontFamily: "WorkSans_700Bold",
+    color: "#2C3E50",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 15,
+    fontFamily: "WorkSans_400Regular",
+    color: "#5C6B73",
+    textAlign: "center",
+    marginBottom: 24,
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    backgroundColor: "#F8F9FA",
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    minHeight: 52,
     marginBottom: 16,
-    width: "100%",
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
   input: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 15,
+    fontFamily: "WorkSans_400Regular",
     color: "#2C3E50",
-    marginLeft: 10,
+  },
+  eyeIconContainer: {
+    padding: 8,
   },
   forgotPasswordLink: {
     alignSelf: "flex-end",
@@ -225,48 +260,61 @@ const styles = StyleSheet.create({
   },
   forgotPasswordText: {
     fontSize: 14,
-    color: "#FF6B9D",
-    fontWeight: "600",
+    fontFamily: "WorkSans_700Bold",
+    color: "#7F8C8D",
   },
   loginButton: {
     width: "100%",
-    borderRadius: 16,
-    overflow: "hidden",
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-  },
-  buttonGradient: {
-    paddingVertical: 16,
+    backgroundColor: "#4CAF50",
+    borderRadius: 25,
+    paddingVertical: 14,
     alignItems: "center",
-  },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-  },
-  loginPrompt: {
-    // Thêm định nghĩa cho loginPrompt
-    flexDirection: "row",
-    marginTop: 20,
-  },
-  loginText: {
-    fontSize: 14,
-    color: "#7F8C8D",
-  },
-  loginLink: {
-    fontSize: 14,
-    color: "#FF6B9D",
-    fontWeight: "600",
-  },
-  logo: {
-    width: 100,
-    height: 100,
-    borderRadius: 20,
+    marginBottom: 24,
   },
   disabledButton: {
-    opacity: 0.6,
+    opacity: 0.7,
+  },
+  loginButtonText: {
+    fontSize: 16,
+    fontFamily: "WorkSans_700Bold",
+    color: "#FFFFFF",
+  },
+  orText: {
+    textAlign: "center",
+    fontFamily: "WorkSans_400Regular",
+    color: "#7F8C8D",
+    fontSize: 14,
+    marginBottom: 16,
+  },
+  socialContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 16,
+    marginBottom: 16,
+  },
+  socialButton: {
+    width: 54,
+    height: 54,
+    backgroundColor: "#F8F9FA",
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  signupContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 8,
+  },
+  signupText: {
+    fontSize: 15,
+    fontFamily: "WorkSans_400Regular",
+    color: "#5C6B73",
+  },
+  signupLink: {
+    fontSize: 15,
+    fontFamily: "WorkSans_700Bold",
+    color: "#4CAF50",
   },
 });
+
