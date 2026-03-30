@@ -38,7 +38,7 @@ export default function SpeakingModeSelection() {
         {/* Close button */}
         <TouchableOpacity
           style={styles.closeButton}
-          onPress={() => router.replace("/(tabs)")}
+          onPress={() => router.back()}
         >
           <Text style={styles.closeText}>×</Text>
         </TouchableOpacity>
