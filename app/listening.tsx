@@ -9,7 +9,7 @@ export default function ListeningScreen() {
         <TouchableOpacity onPress={() => router.back()}>
           <ArrowLeft color="#000" size={24} />
         </TouchableOpacity>
-        <Text style={styles.title}>Listening</Text>
+        <Text style={styles.title}>Listening </Text>
         <View style={{ width: 24 }} />
       </View>
       <View style={styles.content}>
