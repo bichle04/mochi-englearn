@@ -2,26 +2,26 @@ import { router } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import { useEffect } from "react";
 import {
-    Platform,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function TestMode() {
   useEffect(() => {
     // Auto redirect to room with test mode
-    const timer = setTimeout(() => {
-      router.replace({
+    const handleStartTest = () => {
+      router.push({
         pathname: "/speaking/room" as any,
-        params: {
-          mode: "test",
-        },
+        params: { mode: "test" },
       });
-    }, 500);
+    };
+
+    const timer = setTimeout(handleStartTest, 500);
 
     return () => clearTimeout(timer);
   }, []);
@@ -29,7 +29,7 @@ export default function TestMode() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity

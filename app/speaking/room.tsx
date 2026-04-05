@@ -3,14 +3,12 @@ import { SpeakingQuestion } from "@/types/speaking";
 import * as Speech from "expo-speech";
 import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system";
-import * as Sharing from "expo-sharing";
 import ScoringModal from "../../components/speaking/ScoringModal";
 import { useAuth } from "../../contexts/AuthContext";
 
 const BREAK_TIME = 10;
-import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
-import { Pause, Volume2, X, ChevronRight } from "lucide-react-native";
+import { Pause, Volume2, X, ChevronRight, Play } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   Alert,
@@ -22,18 +20,18 @@ import {
   Text,
   TouchableOpacity,
   View,
+  SafeAreaView,
 } from "react-native";
 
 const { width } = Dimensions.get("window");
 
-// States for the speaking room
 type RoomState =
-  | "idle"           // Initial state - waiting to start
-  | "playing-audio"  // Playing question audio
-  | "break"          // 10s break between parts
-  | "preparing"      // Part 2 only - 1 min preparation
-  | "recording"      // Recording user's answer
-  | "finished";      // Question completed
+  | "idle"           
+  | "playing-audio"  
+  | "break"          
+  | "preparing"      
+  | "recording"      
+  | "finished";      
 
 export default function SpeakingRoom() {
   const params = useLocalSearchParams();
@@ -41,7 +39,6 @@ export default function SpeakingRoom() {
   const topicId = params.topicId as string;
   const { user } = useAuth();
 
-  // State management
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [roomState, setRoomState] = useState<RoomState>("idle");
   const [prepTimeLeft, setPrepTimeLeft] = useState(0);
@@ -49,19 +46,14 @@ export default function SpeakingRoom() {
   const [breakTimeLeft, setBreakTimeLeft] = useState(0);
   const [showBreakModal, setShowBreakModal] = useState(false);
 
-  // Audio state
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
-
-  // Recording state (for backend integration)
-  const [recordingUri, setRecordingUri] = useState<string | null>(null);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [apiFeedback, setApiFeedback] = useState<any>(null);
   const [isRecordingUnloaded, setIsRecordingUnloaded] = useState(false);
   const [isScoring, setIsScoring] = useState(false);
   const [scoringStatus, setScoringStatus] = useState<'analyzing' | 'success' | 'error'>('analyzing');
 
-  // Get questions based on mode
   const [questions, setQuestions] = useState<SpeakingQuestion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -79,7 +71,6 @@ export default function SpeakingRoom() {
     fetchQuestions();
   }, [mode, topicId]);
 
-  // Define currentQuestion and progress safely
   const currentQuestion = questions[currentQuestionIndex] || {
     id: "",
     part: 1,
@@ -93,22 +84,16 @@ export default function SpeakingRoom() {
     ? ((currentQuestionIndex + 1) / questions.length) * 100
     : 0;
 
-  // Cleanup audio on unmount
   useEffect(() => {
     return () => {
       Speech.stop();
-      if (sound) {
-        sound.unloadAsync();
-      }
+      if (sound) sound.unloadAsync();
       if (recording && !isRecordingUnloaded) {
-        recording.stopAndUnloadAsync().catch(() => {
-          // Ignore already unloaded errors
-        });
+        recording.stopAndUnloadAsync().catch(() => {});
       }
     };
   }, [sound, recording, isRecordingUnloaded]);
 
-  // Timer effect for preparation, speaking, and break
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | undefined;
 
@@ -117,7 +102,7 @@ export default function SpeakingRoom() {
         setBreakTimeLeft((prev) => {
           if (prev <= 1) {
             setRoomState("idle");
-            setShowBreakModal(false); // Hide modal when break ends
+            setShowBreakModal(false);
             return 0;
           }
           return prev - 1;
@@ -127,7 +112,6 @@ export default function SpeakingRoom() {
       interval = setInterval(() => {
         setPrepTimeLeft((prev) => {
           if (prev <= 1) {
-            // Auto start recording after preparation
             startRecording();
             return 0;
           }
@@ -138,16 +122,13 @@ export default function SpeakingRoom() {
       interval = setInterval(() => {
         setSpeakTimeLeft((prev) => {
           if (prev <= 1) {
-            // Check if there are more questions in the same part
             const hasMoreQuestionsInSamePart =
               currentQuestionIndex < questions.length - 1 &&
               questions[currentQuestionIndex + 1]?.part === currentQuestion.part;
 
             if (hasMoreQuestionsInSamePart) {
-              // Don't pause recording - just change state to 'finished'
               setRoomState("finished");
             } else {
-              // Last question in part or test - pause the recording
               pauseRecording();
             }
             return 0;
@@ -162,46 +143,11 @@ export default function SpeakingRoom() {
     };
   }, [roomState, prepTimeLeft, speakTimeLeft, breakTimeLeft, currentQuestionIndex, questions, currentQuestion.part]);
 
-  if (isLoading) {
-    return (
-      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
-        <Text>Loading questions...</Text>
-      </View>
-    );
-  }
-
-  if (questions.length === 0) {
-    return (
-      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
-        <Text>No questions found.</Text>
-        <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 20, padding: 10 }}>
-          <Text style={{ color: "blue" }}>Go Back</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  // ========================================
-  // BACKEND INTEGRATION POINTS
-  // ========================================
-
-  /**
-   * Play audio file for the question
-   * BACKEND TODO: Replace with actual audio file URL from API
-   * - Load audio from server based on currentQuestion.audioUrl
-   * - Handle audio loading errors
-   * - Update progress if needed
-   */
   const playAudio = async () => {
     try {
-      // Pause recording if it's currently active (for questions 2, 3, etc in same part)
-      // We don't want to record the question audio
       if (recording) {
         const status = await recording.getStatusAsync();
-        if (status.isRecording) {
-          console.log("Pausing recording while playing question audio...");
-          await recording.pauseAsync();
-        }
+        if (status.isRecording) await recording.pauseAsync();
       }
 
       setIsAudioPlaying(true);
@@ -212,12 +158,8 @@ export default function SpeakingRoom() {
       Speech.speak(textToSpeak, {
         language: 'en-US',
         rate: 0.9,
-        onDone: () => {
-          handleAudioFinished();
-        },
-        onStopped: () => {
-          setIsAudioPlaying(false);
-        },
+        onDone: () => handleAudioFinished(),
+        onStopped: () => setIsAudioPlaying(false),
         onError: (e) => {
           console.error("Speech error", e);
           handleAudioFinished();
@@ -230,38 +172,18 @@ export default function SpeakingRoom() {
     }
   };
 
-  /**
-   * Audio playback status callback
-   * Auto-start recording or preparation when audio finishes
-   */
-  const onAudioPlaybackStatusUpdate = (status: any) => {
-    if (status.didJustFinish) {
-      handleAudioFinished();
-    }
-  };
-
-  /**
-   * Handle audio finished - start next phase
-   */
   const handleAudioFinished = () => {
     setIsAudioPlaying(false);
-
-    // Part 2 has preparation time
     if (currentQuestion.part === 2 && currentQuestion.prepTime > 0) {
       setRoomState("preparing");
       setPrepTimeLeft(currentQuestion.prepTime);
     } else {
-      // Part 1 & 3: Auto start recording immediately
       startRecording();
     }
   };
 
-  /**
-   * Start recording user's answer
-   */
   const startRecording = async () => {
     try {
-      console.log("Requesting permissions..");
       const permission = await Audio.requestPermissionsAsync();
       if (permission.status === "granted") {
         await Audio.setAudioModeAsync({
@@ -270,27 +192,18 @@ export default function SpeakingRoom() {
         });
 
         if (recording) {
-          // Check recording status before attempting to start
           const status = await recording.getStatusAsync();
-          console.log("Existing recording status:", status);
-
           if (status.isRecording) {
-            // Already recording - just update the UI state and timer
-            console.log("Recording already active, continuing...");
+            // keep going
           } else if (status.isDoneRecording) {
-            // Recording was stopped, need to create a new one
-            console.log("Previous recording done, creating new recording..");
             const { recording: newRecording } = await Audio.Recording.createAsync(
               Audio.RecordingOptionsPresets.HIGH_QUALITY
             );
             setRecording(newRecording);
           } else {
-            // Recording exists but paused - resume it
-            console.log("Resuming paused recording..");
             await recording.startAsync();
           }
         } else {
-          console.log("Starting new recording..");
           const { recording: newRecording } = await Audio.Recording.createAsync(
             Audio.RecordingOptionsPresets.HIGH_QUALITY
           );
@@ -299,200 +212,180 @@ export default function SpeakingRoom() {
 
         setRoomState("recording");
         setSpeakTimeLeft(currentQuestion.speakTime);
-        console.log("Recording started/resumed");
-      } else {
-        console.error("Permission to record audio not granted");
       }
     } catch (err) {
       console.error("Failed to start recording", err);
     }
   };
 
-  /**
-   * Pause recording user's answer (between questions)
-   */
   const pauseRecording = async () => {
-    console.log("Pausing recording..");
     setRoomState("finished");
-
-    if (!recording) {
-      return;
-    }
-
+    if (!recording) return;
     try {
       await recording.pauseAsync();
-      console.log("Recording paused");
     } catch (error) {
       console.error("Error pausing recording:", error);
     }
   };
 
-
-
-  /**
-   * Save the recording
-   */
   const saveRecording = async (isFinal: boolean = true) => {
-    console.log("Saving recording..");
     if (!recording) return null;
-
     try {
       await recording.stopAndUnloadAsync();
-      setIsRecordingUnloaded(true); // Mark as unloaded
+      setIsRecordingUnloaded(true);
       const uri = recording.getURI();
-      console.log("Recording stopped and stored at", uri);
 
       if (uri) {
-        let fileName = "";
-        if (mode === "test") {
-          fileName = `recording-full-test-${Date.now()}.m4a`;
-        } else {
-          fileName = `recording-part-${currentQuestion.part}-${Date.now()}.m4a`;
-        }
+        let fileName = mode === "test" 
+          ? `recording-full-test-${Date.now()}.m4a`
+          : `recording-part-${currentQuestion.part}-${Date.now()}.m4a`;
 
         let newPath = uri;
-
-        // Only move file on native platforms (not web)
         if (Platform.OS !== "web" && FileSystem.documentDirectory) {
           newPath = FileSystem.documentDirectory + fileName;
-
-          try {
-            await FileSystem.moveAsync({
-              from: uri,
-              to: newPath,
-            });
-            console.log("Recording saved to", newPath);
-          } catch (moveError) {
-            console.warn("Could not move file, using original URI:", moveError);
-            newPath = uri;
-          }
+          await FileSystem.moveAsync({ from: uri, to: newPath });
         }
 
-        setRecordingUri(newPath);
-        console.log("Recording URI for API:", newPath);
+        let questionsForAPI = mode === "test"
+          ? questions.map(q => q.question)
+          : questions.filter(q => q.part === currentQuestion.part).map(q => q.question);
 
-        // Collect questions from the current part
-        let questionsForAPI: string[] = [];
-        if (mode === "test") {
-          // For test mode, collect all questions from all parts
-          questionsForAPI = questions.map(q => q.question);
-        } else {
-          // For practice mode, collect questions only from the current part
-          questionsForAPI = questions
-            .filter(q => q.part === currentQuestion.part)
-            .map(q => q.question);
-        }
-        console.log("Questions to send to API:", questionsForAPI);
-
-        // Send recording to API
-        console.log("Sending recording to API...");
         try {
           setIsScoring(true);
           setScoringStatus('analyzing');
+          
+          /* 
+            ========================================================================
+            [START: BACKEND_INTEGRATION]
+            Sau này khi bạn đã sẵn sàng xử lý API thật, hãy BỎ COMMENT đoạn code dưới đây 
+            và XÓA phần MOCK_LOGIC bên dưới.
+            ========================================================================
+          */
+          /*
           const feedback = await speakingService.submitSpeakingAudio(newPath, questionsForAPI);
-          console.log("Feedback received from API:", feedback);
-          setApiFeedback(feedback); // Store feedback for later use
+          setApiFeedback(feedback);
 
-          // Save feedback to database if user is logged in
           if (user?.id) {
-            try {
-              console.log("Saving feedback to database for user:", user.id);
-              const firstQuestion = questions[0];
-              const partNumber = currentQuestion.part;
-              const partId = firstQuestion?.topicId ? parseInt(firstQuestion.topicId) : 1;
-
-              await speakingService.saveSpeakingFeedback(
-                user.id,
-                partNumber,
-                partId,
-                feedback
-              );
-              console.log("Feedback saved to database successfully");
-            } catch (dbError) {
-              console.error("Error saving feedback to database:", dbError);
-              // Continue anyway - API feedback is still available
-            }
+            const firstQuestion = questions[0];
+            const partId = firstQuestion?.topicId ? parseInt(firstQuestion.topicId) : 1;
+            await speakingService.saveSpeakingFeedback(user.id, currentQuestion.part, partId, feedback);
           }
 
           if (isFinal) {
             setScoringStatus('success');
-            // Wait for 2 seconds to show success message
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, 1500));
           }
 
           setIsScoring(false);
-          return feedback; // Return feedback for immediate use
+          return feedback;
+          */
+          // [END: BACKEND_INTEGRATION]
+
+          /* 
+            ========================================================================
+            [START: MOCK_LOGIC] - Phần giả lập kết quả để phục vụ test UI
+            Sau này hãy xóa khối code này khi bạn đã mở comment phần API thật ở trên.
+            ========================================================================
+          */
+          await new Promise(resolve => setTimeout(resolve, 1500)); // Giả lập thời gian xử lý AI
+          
+          const mockFeedback = {
+            overall_score: 6.0,
+            transcript: "This is a simulated transcript for your IELTS speaking session.",
+            details: {
+              fluency: {
+                score: 6.0,
+                evaluation: [
+                  { criteria: "Steady Pace", description: "The speaker maintains a steady pace and is able to convey the main message clearly." },
+                  { criteria: "Coherence", description: "The speech lacks variety in sentence structure and complexity." }
+                ],
+                errors: [
+                  { original: "this is the example how I can use this recorder", suggested: "this is an example of how I can use this recorder", explanation: "The phrase 'this is the example how' is awkward." }
+                ],
+                feedback: "The speaker demonstrates a basic level of fluency and coherence.",
+                wpm: 116.96
+              },
+              pronunciation: {
+                score: 6.0,
+                evaluation: [{ criteria: "Intonation", description: "Generally clear but needs more precision." }],
+                errors: [],
+                feedback: "Practice word stress to enhance pronunciation clarity."
+              },
+              grammar: {
+                score: 6.0,
+                evaluation: [{ criteria: "Range", description: "Uses a wider range of sentence structures." }],
+                errors: [
+                  { original: "I has a dog since two years", suggested: "I have had a dog for two years", explanation: "Use the present perfect 'have had'." }
+                ],
+                feedback: "Focus on improving complex sentence formation."
+              },
+              vocabulary: {
+                score: 5.0,
+                evaluation: [{ criteria: "Lexical Range", description: "Show a wider range of vocabulary." }],
+                errors: [],
+                feedback: "Work on using more academic or complex vocabulary."
+              }
+            },
+            general_suggestions: [
+              "Work on using a wider range of sentence structures to improve coherence.",
+              "Practice word stress to enhance pronunciation clarity."
+            ]
+          };
+
+          setApiFeedback(mockFeedback);
+
+          if (isFinal) {
+            setScoringStatus('success');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+
+          setIsScoring(false);
+          return mockFeedback;
+          // [END: MOCK_LOGIC]
+
         } catch (apiError) {
           setIsScoring(false);
-          console.error("Error sending to API:", apiError);
-          Alert.alert("API Error", "Failed to process recording. Please try again.");
+          Alert.alert("API Error", "Failed to process recording.");
           return null;
         }
       }
-
-      // Reset recording
       setRecording(null);
     } catch (error) {
       console.error("Error saving recording:", error);
     }
   };
 
-  /**
-   * Move to next question or finish test
-   */
   const handleNextQuestion = async () => {
     if (currentQuestionIndex < questions.length - 1) {
       const nextIndex = currentQuestionIndex + 1;
       const nextQuestion = questions[nextIndex];
 
-      // Check if entering a new part
       if (currentQuestion.part !== nextQuestion.part) {
-        // Pause recording when changing parts
         await pauseRecording();
-
-        // Only save intermediate recordings in practice mode
-        if (mode === "practice") {
-          await saveRecording(false);
-        }
-
+        if (mode === "practice") await saveRecording(false);
         setCurrentQuestionIndex(nextIndex);
         setRoomState("break");
         setBreakTimeLeft(BREAK_TIME);
-        setShowBreakModal(true); // Show modal to hide next part content
+        setShowBreakModal(true);
       } else {
-        // Same part - DON'T pause recording, just move to next question
-        // Recording continues across questions in the same part
         setCurrentQuestionIndex(nextIndex);
         setRoomState("idle");
       }
-
-      // Reset states (but keep recording active if still in same part)
       setPrepTimeLeft(0);
       setSpeakTimeLeft(0);
-      // Don't reset recordingUri - we're building one continuous recording
     } else {
-      // End of test - pause and save recording (full test or last part)
       await pauseRecording();
       const recordingFeedback = await saveRecording(true);
-
-      // Navigate to results with feedback
       if (recordingFeedback) {
         router.push({
           pathname: "/speaking/result",
-          params: {
-            feedback: JSON.stringify(recordingFeedback)
-          }
+          params: { feedback: JSON.stringify(recordingFeedback) }
         } as any);
       } else {
-        // Fallback if no feedback
         router.push("/speaking/result" as any);
       }
     }
   };
-
-  // ========================================
-  // UI HELPER FUNCTIONS
-  // ========================================
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -502,492 +395,352 @@ export default function SpeakingRoom() {
 
   const getInstructionText = () => {
     switch (roomState) {
-      case "idle":
-        return "Press play to start";
-      case "playing-audio":
-        return "Playing the question...";
-      case "break":
-        return `Break time - Part ${currentQuestion.part}`;
-      case "preparing":
-        return "Preparation time";
-      case "recording":
-        return "Recording...";
-      case "finished":
-        return "Completed!";
-      default:
-        return "";
+      case "idle": return "Press play to start";
+      case "playing-audio": return "Playing the question";
+      case "recording": return "Recording...";
+      case "finished": return "Completed!";
+      default: return "";
     }
   };
 
+  if (isLoading) {
+    return <View style={styles.center}><Text>Loading...</Text></View>;
+  }
+
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
-      <LinearGradient
-        colors={["#1E90FF", "#00BFFF", "#87CEEB"]}
-        style={styles.gradient}
-      >
-        {/* Decorative elements */}
-        <View style={[styles.star, { top: 60, left: 20 }]} />
-        <View style={[styles.plus, { top: 100, right: 30 }]} />
-        <View style={[styles.star, { bottom: 150, left: width * 0.75 }]} />
-        <View style={[styles.plus, { bottom: 250, left: 30 }]} />
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" />
+      
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
+          <X size={24} color="#545454" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>
+          Part {currentQuestion.part} - {currentQuestionIndex + 1}/{questions.length}
+        </Text>
+        <View style={{ width: 44 }} />
+      </View>
 
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
-            <X size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-          <View style={styles.partInfo}>
-            <Text style={styles.partText}>
-              Part {currentQuestion.part} - {currentQuestionIndex + 1}/{questions.length}
-            </Text>
-          </View>
+      {/* Progress Bar */}
+      <View style={styles.progressBarContainer}>
+        <View style={styles.progressBarBg}>
+          <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
+        </View>
+      </View>
+
+      {/* Main Content */}
+      <View style={styles.content}>
+        {/* Play/Pause Button */}
+        <TouchableOpacity 
+          style={styles.audioMainButton}
+          onPress={playAudio}
+          disabled={roomState !== "idle" && roomState !== "playing-audio"}
+        >
+          {roomState === "playing-audio" ? (
+            <Pause size={48} color="#FFFFFF" fill="#FFFFFF" />
+          ) : (
+            <Volume2 size={48} color="#FFFFFF" />
+          )}
+        </TouchableOpacity>
+
+        <Text style={styles.listenTitle}>Listen Carefully</Text>
+        <Text style={styles.listenSubtitle}>
+          The examiner will ask you{"\n"}questions
+        </Text>
+
+        {/* Mascot */}
+        <View style={styles.mascotContainer}>
+          <Text style={styles.mascotImg}>🎙️</Text>
         </View>
 
-        {/* Progress Bar */}
-        <View style={styles.progressBarContainer}>
-          <View style={styles.progressBarBackground}>
-            <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
-          </View>
-        </View>
-
-        {/* Main Content */}
-        <View style={styles.content}>
-          {/* Question Card */}
-          <View style={styles.questionCard}>
-            {/* Audio/Play Button */}
-            <TouchableOpacity
-              style={[
-                styles.audioButton,
-                roomState === "playing-audio" && styles.audioButtonPlaying,
-              ]}
-              onPress={playAudio}
-              disabled={roomState !== "idle"}
-            >
-              <View style={styles.audioIconContainer}>
-                {roomState === "playing-audio" ? (
-                  <Pause size={40} color="#FFFFFF" />
-                ) : (
-                  <Volume2 size={40} color="#FFFFFF" />
-                )}
-              </View>
-            </TouchableOpacity>
-
-            {/* Question Text - Only show for Part 2 */}
-            {currentQuestion.part === 2 && currentQuestion.question ? (
-              <Text style={styles.questionText}>{currentQuestion.question}</Text>
-            ) : (
-              <Text style={styles.audioOnlyText}>
-                {currentQuestion.part === 1 && "The examiner will ask you questions"}
-                {currentQuestion.part === 3 && "Discussion with the examiner"}
-              </Text>
-            )}
-
-            {/* Mascot */}
-            <Text style={styles.mascot}>🎙️</Text>
-          </View>
-
-          {/* Timer/Status Display */}
-          <View style={styles.timerContainer}>
-            {/* Remove break display from main UI - now in modal */}
-
-            {roomState === "preparing" && (
-              <View style={styles.timerBox}>
-                <Text style={styles.timerLabel}>Preparation time</Text>
-                <Text style={styles.timerValue}>{formatTime(prepTimeLeft)}</Text>
-                {/* Next button for Part 2 - allows user to skip preparation when ready (only in practice mode) */}
-                {mode === "practice" && (
-                  <TouchableOpacity
-                    style={styles.skipNextButton}
-                    onPress={() => {
-                      setPrepTimeLeft(0);
-                      startRecording();
-                    }}
-                  >
-                    <Text style={styles.skipNextButtonText}>Start Speaking</Text>
-                    <ChevronRight size={20} color="#FFFFFF" />
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
-
-            {roomState === "recording" && (
-              <View style={styles.timerBox}>
-                <Text style={styles.timerLabel}>Time remaining</Text>
-                <Text style={styles.timerValue}>{formatTime(speakTimeLeft)}</Text>
-                {/* Next button - allows user to skip to next question when done answering (only in practice mode) */}
-                {mode === "practice" && (
-                  <TouchableOpacity
-                    style={styles.skipNextButton}
-                    onPress={async () => {
-                      // Check if moving to next question in same part or different part
-                      const isLastQuestion = currentQuestionIndex >= questions.length - 1;
-                      const isChangingPart = !isLastQuestion &&
-                        questions[currentQuestionIndex + 1]?.part !== currentQuestion.part;
-
-                      // Only pause if last question or changing parts
-                      if (isLastQuestion || isChangingPart) {
-                        await pauseRecording();
-                      }
-
-                      // Small delay to ensure state updates
-                      setTimeout(() => {
-                        handleNextQuestion();
-                      }, 100);
-                    }}
-                  >
-                    <Text style={styles.skipNextButtonText}>
-                      {currentQuestionIndex < questions.length - 1 ? "Next" : "Finish"}
-                    </Text>
-                    <ChevronRight size={20} color="#FFFFFF" />
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
-
-            {roomState === "finished" && (
-              <View style={styles.timerBox}>
-                <Text style={styles.timerLabel}>Completed!</Text>
-                <TouchableOpacity
-                  style={styles.nextButton}
-                  onPress={handleNextQuestion}
-                >
-                  <Text style={styles.nextButtonText}>
-                    {currentQuestionIndex < questions.length - 1
-                      ? "Next question"
-                      : "View results"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-        </View>
-
-        {/* Bottom Info Section */}
-        <View style={styles.bottomSection}>
-          <View style={styles.statusInfo}>
-            <Text style={styles.statusIcon}>
-              {roomState === "recording" ? "🔴" : "👤"}
-            </Text>
-            <Text style={styles.statusText}>{getInstructionText()}</Text>
-          </View>
-
-          {/* Recording Indicator */}
+        {/* Dynamic Cards */}
+        <View style={styles.dynamicCardContainer}>
           {roomState === "recording" && (
-            <View style={styles.recordingIndicator}>
-              <View style={styles.recordingDot} />
-              <Text style={styles.recordingText}>Recording</Text>
+            <View style={styles.timeRemainingCard}>
+              <Text style={styles.blueTimerLabel}>Time remaining</Text>
+              <Text style={styles.blueTimerValue}>{formatTime(speakTimeLeft)}</Text>
+              <TouchableOpacity 
+                style={styles.blueNextBtn}
+                onPress={() => handleNextQuestion()}
+              >
+                <Text style={styles.blueNextBtnText}>Next</Text>
+                <ChevronRight size={20} color="#FFFFFF" strokeWidth={3} />
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {roomState === "finished" && (
+            <View style={styles.completedCard}>
+              <Text style={styles.greenCompletedLabel}>Completed!</Text>
+              <Text style={styles.completedEmoji}>🎉</Text>
+              <TouchableOpacity 
+                style={styles.greenBtn}
+                onPress={handleNextQuestion}
+              >
+                <Text style={styles.greenBtnText}>View results</Text>
+              </TouchableOpacity>
             </View>
           )}
         </View>
-      </LinearGradient>
+      </View>
 
-      {/* Scoring Modal Component */}
+      {/* Bottom Status Section */}
+      <View style={styles.bottomStatusContainer}>
+        {roomState === "recording" ? (
+          <View style={styles.recordingPill}>
+            <View style={styles.redDot} />
+            <Text style={styles.recordingPillText}>RECORDING...</Text>
+          </View>
+        ) : (
+          <Text style={[
+            styles.instructionText,
+            roomState === "playing-audio" && { color: "#22C55E" }
+          ]}>
+            {getInstructionText()}
+          </Text>
+        )}
+      </View>
+
+      {/* Scoring Modal */}
       <ScoringModal visible={isScoring} status={scoringStatus} />
 
-      {/* Break Time Modal - Covers the screen to hide next part content */}
-      <Modal
-        visible={showBreakModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => { }} // Prevent closing by back button
-      >
+      {/* Break Modal */}
+      <Modal visible={showBreakModal} transparent={true} animationType="fade">
         <View style={styles.modalOverlay}>
-          <LinearGradient
-            colors={["#FF6B9D", "#FF8C42"]}
-            style={styles.breakModalContent}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            {/* Decorative stars */}
-            <View style={[styles.modalStar, { top: 40, left: 30 }]} />
-            <View style={[styles.modalStar, { top: 80, right: 40 }]} />
-            <View style={[styles.modalStar, { bottom: 100, left: 50 }]} />
-            <View style={[styles.modalStar, { bottom: 60, right: 30 }]} />
-
+          <View style={styles.breakCard}>
             <Text style={styles.breakEmoji}>☕</Text>
             <Text style={styles.breakTitle}>Break time</Text>
-            <Text style={styles.breakSubtitle}>
-              You have completed Part {questions[currentQuestionIndex - 1]?.part || currentQuestion.part}
-            </Text>
-
-            <View style={styles.breakTimerBox}>
-              <Text style={styles.breakTimerValue}>{formatTime(breakTimeLeft)}</Text>
-            </View>
-
-            <Text style={styles.breakMessage}>
-              Prepare for Part {currentQuestion.part}! 💪
-            </Text>
-          </LinearGradient>
+            <Text style={styles.breakTimer}>{formatTime(breakTimeLeft)}</Text>
+            <Text style={styles.breakDesc}>Prepare for Part {currentQuestion.part}!</Text>
+          </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#FFFFFF",
   },
-  gradient: {
+  center: {
     flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === "ios" ? 60 : 40,
-    paddingBottom: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingTop: Platform.OS === "android" ? (StatusBar.currentHeight || 0) + 15 : 20,
   },
   closeButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#F3F4F6",
     alignItems: "center",
     justifyContent: "center",
   },
-  partInfo: {
-    flex: 1,
-    alignItems: "center",
-  },
-  partText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#FFFFFF",
+  headerTitle: {
+    fontFamily: "Nunito_700Bold",
+    fontSize: 20,
+    color: "#2E3A59",
   },
   progressBarContainer: {
     paddingHorizontal: 20,
-    marginBottom: 20,
+    marginTop: 10,
+    marginBottom: 40,
   },
-  progressBarBackground: {
+  progressBarBg: {
     height: 8,
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    backgroundColor: "#E5E7EB",
     borderRadius: 4,
     overflow: "hidden",
   },
   progressBarFill: {
     height: "100%",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#22C55E",
     borderRadius: 4,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
-  },
-  questionCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    padding: 24,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+    paddingHorizontal: 24,
   },
-  audioButton: {
-    marginBottom: 20,
-  },
-  audioButtonPlaying: {
-    opacity: 0.7,
-  },
-  audioIconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: "#1E90FF",
+  audioMainButton: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "#22C55E",
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: 30,
+    // Shadow
+    shadowColor: "#22C55E",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+    elevation: 8,
   },
-  questionText: {
-    fontSize: 15,
-    color: "#333333",
+  listenTitle: {
+    fontFamily: "Nunito_800ExtraBold",
+    fontSize: 22,
+    color: "#1A2138",
+    marginBottom: 8,
+  },
+  listenSubtitle: {
+    fontFamily: "Nunito_400Regular",
+    fontSize: 18,
+    color: "#6B7280",
     textAlign: "center",
     lineHeight: 24,
-    marginBottom: 16,
+    marginBottom: 20,
   },
-  audioOnlyText: {
-    fontSize: 14,
-    color: "#999999",
-    textAlign: "center",
-    fontStyle: "italic",
-    marginBottom: 16,
+  mascotContainer: {
+    marginBottom: 40,
   },
-  mascot: {
+  mascotImg: {
+    fontSize: 60,
+  },
+  dynamicCardContainer: {
+    width: "100%",
+    alignItems: "center",
+  },
+  timeRemainingCard: {
+    width: "100%",
+    backgroundColor: "#E2F2FD",
+    borderRadius: 25,
+    padding: 24,
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#0085E8",
+  },
+  blueTimerLabel: {
+    fontFamily: "Nunito_700Bold",
+    fontSize: 18,
+    color: "#0085E8",
+    marginBottom: 10,
+  },
+  blueTimerValue: {
+    fontFamily: "Nunito_800ExtraBold",
     fontSize: 48,
+    color: "#2E3A59",
+    marginBottom: 20,
   },
-  timerContainer: {
-    marginTop: 24,
+  blueNextBtn: {
+    flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#0085E8",
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 15,
+    gap: 8,
   },
-  timerBox: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    borderRadius: 16,
-    padding: 20,
-    minWidth: 200,
-    alignItems: "center",
-  },
-  timerLabel: {
-    fontSize: 14,
-    color: "#FFFFFF",
-    marginBottom: 8,
-  },
-  timerValue: {
-    fontSize: 36,
-    fontWeight: "bold",
+  blueNextBtnText: {
+    fontFamily: "Nunito_700Bold",
+    fontSize: 18,
     color: "#FFFFFF",
   },
-  nextButton: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
+  completedCard: {
+    width: "100%",
+    backgroundColor: "#E3FFE5",
+    borderRadius: 25,
+    padding: 24,
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#01BD50",
+  },
+  greenCompletedLabel: {
+    fontFamily: "Nunito_800ExtraBold",
+    fontSize: 20,
+    color: "#01BD50",
+    marginBottom: 15,
+  },
+  completedEmoji: {
+    fontSize: 50,
+    marginBottom: 20,
+  },
+  greenBtn: {
+    backgroundColor: "#01BD50",
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 15,
+  },
+  greenBtnText: {
+    fontFamily: "Nunito_700Bold",
+    fontSize: 18,
+    color: "#FFFFFF",
+  },
+  bottomStatusContainer: {
+    width: "100%",
+    alignItems: "center",
+    paddingBottom: 40,
+  },
+  instructionText: {
+    fontFamily: "Nunito_700Bold",
+    fontSize: 20,
+    color: "#2E3A59",
+  },
+  recordingPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEF2F2",
     paddingVertical: 12,
     paddingHorizontal: 24,
-    marginTop: 12,
+    borderRadius: 30,
+    borderWidth: 1.5,
+    borderColor: "#FEE2E2",
+    gap: 10,
   },
-  nextButtonText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#1E90FF",
-  },
-  skipNextButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.5)",
-  },
-  skipNextButtonText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-    marginRight: 4,
-  },
-  bottomSection: {
-    backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 20,
-    alignItems: "center",
-  },
-  statusInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  statusIcon: {
-    fontSize: 24,
-    marginRight: 8,
-  },
-  statusText: {
-    fontSize: 14,
-    color: "#333333",
-    fontWeight: "500",
-  },
-  recordingIndicator: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 12,
-    backgroundColor: "#FFE5E5",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  recordingDot: {
+  redDot: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: "#FF0000",
-    marginRight: 8,
+    backgroundColor: "#DC2626",
   },
-  recordingText: {
-    fontSize: 13,
-    color: "#FF0000",
-    fontWeight: "600",
+  recordingPillText: {
+    fontFamily: "Nunito_800ExtraBold",
+    fontSize: 16,
+    color: "#DC2626",
+    letterSpacing: 1,
   },
-  // Decorative elements
-  star: {
-    position: "absolute",
-    width: 8,
-    height: 8,
-    backgroundColor: "rgba(255, 255, 255, 0.6)",
-    borderRadius: 4,
-  },
-  plus: {
-    position: "absolute",
-    width: 16,
-    height: 16,
-  },
-  // Break Modal Styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.9)",
+    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
   },
-  breakModalContent: {
-    width: width * 0.9,
-    borderRadius: 24,
+  breakCard: {
+    backgroundColor: "#FFFFFF",
     padding: 40,
+    borderRadius: 30,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 10,
-  },
-  modalStar: {
-    position: "absolute",
-    width: 12,
-    height: 12,
-    backgroundColor: "rgba(255, 255, 255, 0.5)",
-    borderRadius: 6,
+    width: width * 0.8,
   },
   breakEmoji: {
-    fontSize: 80,
+    fontSize: 60,
     marginBottom: 20,
   },
   breakTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-    marginBottom: 12,
-    textAlign: "center",
+    fontFamily: "Nunito_800ExtraBold",
+    fontSize: 24,
+    color: "#1A2138",
+    marginBottom: 10,
   },
-  breakSubtitle: {
-    fontSize: 16,
-    color: "rgba(255, 255, 255, 0.9)",
-    marginBottom: 32,
-    textAlign: "center",
-  },
-  breakTimerBox: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    borderRadius: 20,
-    paddingVertical: 24,
-    paddingHorizontal: 48,
-    marginBottom: 24,
-  },
-  breakTimerValue: {
+  breakTimer: {
+    fontFamily: "Nunito_800ExtraBold",
     fontSize: 48,
-    fontWeight: "bold",
-    color: "#FFFFFF",
+    color: "#FF6B9D",
+    marginBottom: 10,
   },
-  breakMessage: {
-    fontSize: 15,
-    color: "#FFFFFF",
-    textAlign: "center",
-    fontWeight: "500",
+  breakDesc: {
+    fontFamily: "Nunito_400Regular",
+    fontSize: 18,
+    color: "#6B7280",
   },
 });
