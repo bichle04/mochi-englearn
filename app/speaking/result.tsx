@@ -1,6 +1,6 @@
-import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Award, BarChart3, ChevronRight } from "lucide-react-native";
+import { CupBold, Chart2Bold } from "@solar-icons/react-native";
+import { ChevronRight } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   Dimensions,
@@ -9,9 +9,13 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ActivityIndicator
+  ActivityIndicator,
+  SafeAreaView,
+  StatusBar,
+  Platform,
 } from "react-native";
 import { speakingService } from "../../services/speaking.service";
+import { LinearGradient } from "expo-linear-gradient";
 
 const { width } = Dimensions.get("window");
 
@@ -56,9 +60,7 @@ export default function SpeakingResultScreen() {
         return;
       }
 
-      // Store full feedback for navigation
       setFullFeedback(feedbackData);
-
       const overallScore = Number(feedbackData.overall_score) || 0;
       const details = feedbackData.details || {};
 
@@ -70,8 +72,8 @@ export default function SpeakingResultScreen() {
         pronunciationScore: details.pronunciation?.score || 0,
         partScores: [
           { part: 1, score: details.fluency?.score || 0 },
-          { part: 2, score: details.grammar?.score || 0 },
-          { part: 3, score: details.pronunciation?.score || 0 },
+          { part: 2, score: details.vocabulary?.score || 0 },
+          { part: 3, score: details.grammar?.score || 0 },
         ],
       };
 
@@ -98,7 +100,6 @@ export default function SpeakingResultScreen() {
       }
 
       const historyItem = await speakingService.getHistoryItem(id, type);
-
       if (!historyItem || !historyItem.details) {
         setError('No data found');
         setLoading(false);
@@ -108,7 +109,6 @@ export default function SpeakingResultScreen() {
       const details = historyItem.details;
       const overallScore = Number(historyItem.overall_score) || 0;
 
-      // Store full feedback for navigation
       const feedbackToPass = {
         overall_score: details.overall_score || overallScore,
         transcript: details.transcript || '',
@@ -130,8 +130,8 @@ export default function SpeakingResultScreen() {
         pronunciationScore: details.pronunciation?.score || 0,
         partScores: [
           { part: 1, score: details.fluency?.score || 0 },
-          { part: 2, score: details.grammar?.score || 0 },
-          { part: 3, score: details.pronunciation?.score || 0 },
+          { part: 2, score: details.vocabulary?.score || 0 },
+          { part: 3, score: details.grammar?.score || 0 },
         ],
       };
 
@@ -145,443 +145,263 @@ export default function SpeakingResultScreen() {
     }
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 8.0) return "#4CAF50"; // Green
-    if (score >= 6.5) return "#1E90FF"; // Blue
-    if (score >= 5.0) return "#FFA500"; // Orange
-    return "#FF6B6B"; // Red
-  };
-
-  const handleViewDetails = () => {
-    // Navigate to feedback screen with full feedback data
-    if (fullFeedback) {
-      router.push({
-        pathname: "/speaking/feedback",
-        params: {
-          feedback: JSON.stringify(fullFeedback)
-        }
-      } as any);
-    } else {
-      router.push("/speaking/feedback" as any);
-    }
-  };
-
-  const handleBackToHome = () => {
-    router.replace("/(tabs)" as any);
-  };
-
   if (loading) {
     return (
-      <LinearGradient
-        colors={["#1E90FF", "#00BFFF", "#87CEEB"]}
-        style={styles.container}
-      >
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FFF" />
-          <Text style={styles.loadingText}>Loading result...</Text>
-        </View>
-      </LinearGradient>
-    );
-  }
-
-  if (error || !result) {
-    return (
-      <LinearGradient
-        colors={["#1E90FF", "#00BFFF", "#87CEEB"]}
-        style={styles.container}
-      >
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error || 'Failed to load result'}</Text>
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={fetchResult}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.retryButtonText}>Retry</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.backButtonError}
-            onPress={() => router.back()}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.backButtonErrorText}>Go Back</Text>
-          </TouchableOpacity>
-        </View>
-      </LinearGradient>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#01BD50" />
+      </View>
     );
   }
 
   return (
-    <LinearGradient
-      colors={["#1E90FF", "#00BFFF", "#87CEEB"]}
-      style={styles.container}
-    >
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Decorative elements */}
-        <View style={styles.starLeft}>
-          <Text style={styles.starText}>⭐</Text>
-        </View>
-        <View style={styles.starRight}>
-          <Text style={styles.starText}>✨</Text>
-        </View>
+        <View style={styles.cardContainer}>
+          <View style={styles.resultCard}>
+            {/* Badge (Middle Scale) */}
+            <View style={styles.badgeWrapper}>
+              <LinearGradient
+                colors={["#FFD60A", "#FF9F0A"]}
+                style={styles.badgeGradient}
+              >
+                <CupBold size={40} color="#FFFFFF" />
+              </LinearGradient>
+            </View>
 
-        {/* Result Card */}
-        <View style={styles.resultCard}>
-          {/* Award Icon */}
-          <View style={styles.awardContainer}>
-            <LinearGradient
-              colors={["#FFD700", "#FFA500"]}
-              style={styles.awardBadge}
-            >
-              <Award color="#FFF" size={40} strokeWidth={2.5} />
-            </LinearGradient>
-          </View>
+            <Text style={styles.congratsTitle}>Congratulations!</Text>
+            <Text style={styles.hasCompleted}>has completed Speaking Test</Text>
 
-          {/* Congratulations Header */}
-          <Text style={styles.congratsText}>Congratulations!</Text>
+            {/* Overall Score (Middle Scale) */}
+            <View style={styles.overallContainer}>
+              <Text style={styles.overallScoreText}>
+                {result?.overallScore.toFixed(1)}
+              </Text>
+              <Text style={styles.overallLabelText}>OVERALL</Text>
+            </View>
 
-          {/* Test Name */}
-          <Text style={styles.testName}>has completed Speaking Test</Text>
+            {/* Detailed Criteria (Distributed) */}
+            <View style={styles.criteriaList}>
+              <CriterionRow label="Fluency and Coherence" score={result?.fluencyScore || 0} />
+              <CriterionRow label="Lexical Resource" score={result?.lexicalScore || 0} />
+              <CriterionRow label="Grammar Range & Accuracy" score={result?.grammarScore || 0} />
+              <CriterionRow label="Pronunciation" score={result?.pronunciationScore || 0} />
+            </View>
 
-          {/* Overall Score */}
-          <View style={styles.overallScoreContainer}>
-            <Text style={[styles.overallScore, { color: getScoreColor(result.overallScore) }]}>
-              {result.overallScore.toFixed(1)}
-            </Text>
-            <Text style={styles.overallLabel}>Overall</Text>
-          </View>
-
-          {/* Criteria Scores */}
-          <View style={styles.criteriaContainer}>
-            <ScoreRow
-              score={result.fluencyScore}
-              label="Fluency and Coherence"
-              color={getScoreColor(result.fluencyScore)}
-            />
-            <ScoreRow
-              score={result.lexicalScore}
-              label="Lexical Resource"
-              color={getScoreColor(result.lexicalScore)}
-            />
-            <ScoreRow
-              score={result.grammarScore}
-              label="Grammatical Range & Accuracy"
-              color={getScoreColor(result.grammarScore)}
-            />
-            <ScoreRow
-              score={result.pronunciationScore}
-              label="Pronunciation"
-              color={getScoreColor(result.pronunciationScore)}
-            />
-          </View>
-
-          {/* Performance by Part */}
-          <View style={styles.performanceSection}>
+            {/* Performance Title */}
             <Text style={styles.performanceTitle}>Performance by Part</Text>
-            <View style={styles.partsContainer}>
-              {result.partScores.map((partScore) => (
-                <View key={partScore.part} style={styles.partCard}>
-                  <BarChart3 color="#1E90FF" size={20} />
-                  <Text style={styles.partNumber}>Part {partScore.part}</Text>
+
+            {/* Part Cards */}
+            <View style={styles.partsRow}>
+              {[1, 2, 3].map((partNum) => (
+                <View key={partNum} style={styles.partTinyCard}>
+                  <Chart2Bold size={22} color="#01BD50" />
+                  <Text style={styles.partLabel}>Part {partNum}</Text>
                 </View>
               ))}
             </View>
           </View>
         </View>
 
-        {/* Action Buttons */}
-        <TouchableOpacity
-          style={styles.detailButton}
-          onPress={handleViewDetails}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={["#FFD700", "#FFA500"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.detailButtonGradient}
-          >
-            <Text style={styles.detailButtonText}>View Details</Text>
-            <ChevronRight color="#FFF" size={24} />
-          </LinearGradient>
-        </TouchableOpacity>
+        {/* Action Buttons (Repositioned) */}
+        <View style={styles.actionContainer}>
+            <TouchableOpacity
+            style={styles.viewDetailsBtn}
+            onPress={() => {
+                if (fullFeedback) {
+                    router.push({
+                      pathname: "/speaking/feedback",
+                      params: { feedback: JSON.stringify(fullFeedback) }
+                    } as any);
+                  }
+            }}
+            activeOpacity={0.8}
+            >
+            <Text style={styles.viewDetailsText}>View Details</Text>
+            <ChevronRight color="#FFFFFF" size={18} strokeWidth={3} />
+            </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={handleBackToHome}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.backButtonText}>Back to Home</Text>
-        </TouchableOpacity>
+            <TouchableOpacity
+            style={styles.backHomeBtn}
+            onPress={() => router.replace("/(tabs)" as any)}
+            activeOpacity={0.7}
+            >
+            <Text style={styles.backHomeText}>Back to Home</Text>
+            </TouchableOpacity>
+        </View>
       </ScrollView>
-    </LinearGradient>
+    </SafeAreaView>
   );
 }
 
-interface ScoreRowProps {
-  score: number;
-  label: string;
-  color: string;
-}
-
-const ScoreRow: React.FC<ScoreRowProps> = ({ score, label, color }) => {
-  return (
-    <View style={styles.scoreRow}>
-      <Text style={[styles.scoreValue, { color }]}>{score.toFixed(1)}</Text>
-      <Text style={styles.scoreLabel}>{label}</Text>
-    </View>
-  );
-};
+const CriterionRow = ({ label, score }: { label: string; score: number }) => (
+  <View style={styles.criterionRow}>
+    <Text style={styles.criterionScore}>{score.toFixed(1)}</Text>
+    <Text style={styles.criterionLabel}>{label}</Text>
+  </View>
+);
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 40,
-    alignItems: "center",
-  },
-  starLeft: {
-    position: "absolute",
-    top: 20,
-    left: 20,
-  },
-  starRight: {
-    position: "absolute",
-    top: 100,
-    right: 30,
-  },
-  starText: {
-    fontSize: 24,
-  },
-  resultCard: {
-    backgroundColor: "#FFF",
-    borderRadius: 24,
-    padding: 24,
-    width: width - 40,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  awardContainer: {
-    marginBottom: 16,
-  },
-  awardBadge: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#FFA500",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  congratsText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 8,
-  },
-  testName: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 4,
-  },
-  testTitle: {
-    fontSize: 14,
-    color: "#666",
-    fontWeight: "600",
-    marginBottom: 24,
-    textAlign: "center",
-    paddingHorizontal: 20,
-  },
-  overallScoreContainer: {
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  overallScore: {
-    fontSize: 56,
-    fontWeight: "bold",
-    marginBottom: 4,
-  },
-  overallLabel: {
-    fontSize: 16,
-    color: "#666",
-    fontWeight: "600",
-  },
-  criteriaContainer: {
-    width: "100%",
-    marginBottom: 24,
-  },
-  scoreRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  scoreValue: {
-    fontSize: 20,
-    fontWeight: "bold",
-    width: 50,
-  },
-  scoreLabel: {
-    fontSize: 14,
-    color: "#666",
-    flex: 1,
-  },
-  performanceSection: {
-    width: "100%",
-    marginBottom: 20,
-  },
-  performanceTitle: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 12,
-    fontWeight: "600",
-  },
-  partsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  partCard: {
-    flex: 1,
-    alignItems: "center",
-    paddingVertical: 12,
-    backgroundColor: "#F0F8FF",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#1E90FF",
-  },
-  partNumber: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: "#333",
-    marginTop: 4,
-  },
-  partLabel: {
-    fontSize: 10,
-    color: "#666",
-    marginTop: 2,
-  },
-  dateText: {
-    fontSize: 12,
-    color: "#999",
-    marginTop: 12,
-  },
-  poweredBy: {
-    fontSize: 10,
-    color: "#CCC",
-    marginTop: 4,
-  },
-  detailButton: {
-    width: width - 40,
-    marginTop: 24,
-    borderRadius: 16,
-    overflow: "hidden",
-    shadowColor: "#FF6B9D",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  detailButtonGradient: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-  },
-  detailButtonText: {
-    color: "#FFF",
-    fontSize: 18,
-    fontWeight: "bold",
-    marginRight: 8,
-  },
-  backButton: {
-    marginTop: 16,
-    paddingVertical: 12,
-  },
-  backButtonText: {
-    color: "#FFF",
-    fontSize: 16,
-    fontWeight: "600",
+    backgroundColor: "#FFFFFF",
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-  loadingText: {
-    color: "#FFF",
-    fontSize: 16,
-    marginTop: 16,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  scrollContent: {
     paddingHorizontal: 20,
+    paddingTop: Platform.OS === "android" ? (StatusBar.currentHeight || 0) + 26 : 50,
+    paddingBottom: 10,
+    alignItems: "center",
   },
-  errorText: {
-    color: "#FFF",
+  cardContainer: {
+    width: "100%",
+    padding: 1,
+    borderRadius: 30,
+    borderWidth: 1.5,
+    borderColor: "#00BD50",
+    marginBottom: 24, // Reduced by exactly 1px from 25
+    backgroundColor: "#FFFFFF",
+  },
+  resultCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 28,
+    padding: 20,
+    width: "100%",
+    alignItems: "center",
+  },
+  badgeWrapper: {
+    marginTop: -5,
+    marginBottom: 15,
+    shadowColor: "#FF9F0A",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  badgeGradient: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  congratsTitle: {
+    fontFamily: "Nunito_800ExtraBold",
+    fontSize: 28,
+    color: "#1A2138",
+    marginBottom: 6,
+  },
+  hasCompleted: {
+    fontFamily: "Nunito_400Regular",
+    fontSize: 17,
+    color: "#6B7280",
+    marginBottom: 20,
+  },
+  overallContainer: {
+    alignItems: "center",
+    marginBottom: 25,
+  },
+  overallScoreText: {
+    fontFamily: "Nunito_800ExtraBold",
+    fontSize: 72,
+    color: "#1F2937",
+    lineHeight: 75,
+  },
+  overallLabelText: {
+    fontFamily: "Nunito_700Bold",
     fontSize: 18,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 24,
+    color: "#9CA3AF",
+    letterSpacing: 2,
   },
-  retryButton: {
-    backgroundColor: "#FFF",
-    paddingHorizontal: 32,
-    paddingVertical: 12,
-    borderRadius: 12,
+  criteriaList: {
+    width: "100%",
+    paddingHorizontal: 10,
+    marginBottom: 25,
+  },
+  criterionRow: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 12,
   },
-  retryButtonText: {
-    color: "#1E90FF",
-    fontSize: 16,
-    fontWeight: "bold",
+  criterionScore: {
+    fontFamily: "Nunito_800ExtraBold",
+    fontSize: 22,
+    color: "#01BD50",
+    width: 45,
   },
-  backButtonError: {
-    borderWidth: 2,
-    borderColor: "#FFF",
-    paddingHorizontal: 32,
-    paddingVertical: 12,
-    borderRadius: 12,
+  criterionLabel: {
+    fontFamily: "Nunito_700Bold",
+    fontSize: 18,
+    color: "#4B5563",
+    flex: 1,
   },
-  backButtonErrorText: {
-    color: "#FFF",
-    fontSize: 16,
-    fontWeight: "bold",
+  performanceTitle: {
+    alignSelf: "flex-start",
+    fontFamily: "Nunito_800ExtraBold",
+    fontSize: 17,
+    color: "#1F2937",
+    marginBottom: 15,
   },
-  mascotContainer: {
-    marginTop: 20,
+  partsRow: {
+    flexDirection: "row",
+    gap: 12,
+    width: "100%",
+    justifyContent: "space-between",
+  },
+  partTinyCard: {
+    flex: 1,
+    height: 70,
+    borderRadius: 15,
+    borderWidth: 1.5,
+    borderColor: "#B7FFBD",
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+  },
+  partLabel: {
+    fontFamily: "Nunito_700Bold",
+    fontSize: 13,
+    color: "#4B5563",
+  },
+  actionContainer: {
+    width: "100%",
     alignItems: "center",
   },
-  mascotEmoji: {
-    fontSize: 48,
-    marginBottom: 8,
+  viewDetailsBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#01BD50",
+    width: "100%",
+    height: 64,
+    borderRadius: 22,
+    gap: 8,
+    marginBottom: 10,
+    shadowColor: "#01BD50",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.22,
+    shadowRadius: 10,
+    elevation: 6,
   },
-  mascotBubble: {
-    backgroundColor: "#FFF",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: "#1E90FF",
+  viewDetailsText: {
+    fontFamily: "Nunito_800ExtraBold",
+    fontSize: 20,
+    color: "#FFFFFF",
   },
-  mascotText: {
-    color: "#1E90FF",
-    fontSize: 14,
-    fontWeight: "600",
+  backHomeBtn: {
+    paddingVertical: 10,
+  },
+  backHomeText: {
+    fontFamily: "Nunito_800ExtraBold",
+    fontSize: 17,
+    color: "#0185E8",
   },
 });

@@ -1,6 +1,4 @@
-import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
-import { BarChart3, Headphones, History, Trophy } from "lucide-react-native";
+import React from "react";
 import {
   Dimensions,
   Platform,
@@ -9,9 +7,17 @@ import {
   Text,
   TouchableOpacity,
   View,
+  SafeAreaView,
 } from "react-native";
+import { router } from "expo-router";
+import {
+  HeadphonesRoundBold,
+  CupBold,
+  HistoryBold,
+  Chart2Bold,
+} from "@solar-icons/react-native";
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
 export default function SpeakingModeSelection() {
   const handleModeSelect = (mode: "practice" | "test") => {
@@ -23,238 +29,209 @@ export default function SpeakingModeSelection() {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
-      <LinearGradient
-        colors={["#1E90FF", "#00BFFF", "#87CEEB"]}
-        style={styles.gradient}
-      >
-        {/* Decorative elements */}
-        <View style={[styles.star, { top: 60, left: 20 }]} />
-        <View style={[styles.plus, { top: 80, right: 30 }]} />
-        <View style={[styles.star, { bottom: 120, left: width * 0.7 }]} />
-        <View style={[styles.plus, { bottom: 200, left: 40 }]} />
-
-        {/* Close button */}
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" />
+      
+      {/* Close button */}
+      <View style={styles.header}>
         <TouchableOpacity
           style={styles.closeButton}
           onPress={() => router.back()}
         >
           <Text style={styles.closeText}>×</Text>
         </TouchableOpacity>
+      </View>
 
-        {/* Content */}
-        <View style={styles.content}>
-          {/* Title */}
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>Select test mode</Text>
-            <Text style={styles.subtitle}>
-              Choose the mode that suits you best
-            </Text>
-          </View>
-
-          {/* Mode Cards */}
-          <View style={styles.cardsContainer}>
-            {/* Practice Mode */}
-            <TouchableOpacity
-              style={styles.card}
-              onPress={() => handleModeSelect("practice")}
-              activeOpacity={0.8}
-            >
-              <View style={styles.iconContainer}>
-                <View style={styles.iconWrapper}>
-                  <Headphones size={48} color="#FFB800" strokeWidth={2} />
-                </View>
-              </View>
-              <Text style={styles.cardTitle}>Practice</Text>
-              <Text style={styles.cardDescription}>
-                Practice speaking with instant feedback
-              </Text>
-            </TouchableOpacity>
-
-            {/* Test Mode */}
-            <TouchableOpacity
-              style={styles.card}
-              onPress={() => handleModeSelect("test")}
-              activeOpacity={0.8}
-            >
-              <View style={styles.iconContainer}>
-                <View style={styles.iconWrapper}>
-                  <Trophy size={48} color="#FFB800" strokeWidth={2} />
-                </View>
-              </View>
-              <Text style={styles.cardTitle}>Test</Text>
-              <Text style={styles.cardDescription}>
-                Take a mock test in a virtual test room
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Additional Actions */}
-          <View style={styles.actionsContainer}>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => router.push("/speaking/history")}
-              activeOpacity={0.8}
-            >
-              <View style={styles.actionIcon}>
-                <History size={24} color="#1E90FF" />
-              </View>
-              <Text style={styles.actionText}>History</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => router.push("/speaking/stats")}
-              activeOpacity={0.8}
-            >
-              <View style={styles.actionIcon}>
-                <BarChart3 size={24} color="#1E90FF" />
-              </View>
-              <Text style={styles.actionText}>Statistics</Text>
-            </TouchableOpacity>
-          </View>
+      <View style={styles.content}>
+        {/* Title Section */}
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Chọn chế độ làm bài</Text>
+          <Text style={styles.subtitle}>
+            Lựa chọn chế độ phù hợp với bạn
+          </Text>
         </View>
-      </LinearGradient>
-    </View>
+
+        {/* Main Mode Cards */}
+        <View style={styles.modeCardsRow}>
+          {/* Practice Mode */}
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => handleModeSelect("practice")}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.iconCircle, { backgroundColor: "#FFFAE6" }]}>
+              <HeadphonesRoundBold size={40} color="#FFA600" />
+            </View>
+            <Text style={styles.cardTitle}>Luyện tập</Text>
+            <Text style={styles.cardDescription}>
+              Ôn luyện để{"\n"}chinh phục{"\n"}Speaking
+            </Text>
+          </TouchableOpacity>
+
+          {/* Test Mode */}
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => handleModeSelect("test")}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.iconCircle, { backgroundColor: "#E8F7FE" }]}>
+              <CupBold size={40} color="#109EFA" />
+            </View>
+            <Text style={styles.cardTitle}>Phòng thi</Text>
+            <Text style={styles.cardDescription}>
+              Thi thử trong{"\n"}phòng thi ảo
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Bottom Action Buttons */}
+        <View style={styles.actionsRow}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => router.push("/speaking/history")}
+            activeOpacity={0.8}
+          >
+            <HistoryBold size={24} color="#58CC02" />
+            <Text style={styles.actionText}>Lịch sử</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => router.push("/speaking/stats")}
+            activeOpacity={0.8}
+          >
+            <Chart2Bold size={24} color="#109EFA" />
+            <Text style={styles.actionText}>Thống kê</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#F9F9FB",
   },
-  gradient: {
-    flex: 1,
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   closeButton: {
-    position: "absolute",
-    top: Platform.OS === "ios" ? 50 : 40,
-    left: 20,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 10,
+    marginTop: 20,
+    // Shadow
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
   },
   closeText: {
-    color: "#FFFFFF",
-    fontSize: 28,
+    fontSize: 24,
+    color: "#000000",
     fontWeight: "300",
     marginTop: -2,
   },
   content: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 24,
+    paddingTop: 40,
   },
   titleContainer: {
     alignItems: "center",
-    marginBottom: 60,
+    marginBottom: 50,
   },
   title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-    marginBottom: 12,
+    fontFamily: "Nunito_800ExtraBold",
+    fontSize: 32,
+    color: "#2E3A59",
     textAlign: "center",
+    marginBottom: 12,
   },
   subtitle: {
-    fontSize: 16,
-    color: "rgba(255, 255, 255, 0.9)",
+    fontFamily: "Nunito_400Regular",
+    fontSize: 18,
+    color: "#8F9BB3",
     textAlign: "center",
   },
-  cardsContainer: {
+  modeCardsRow: {
     flexDirection: "row",
     gap: 16,
     width: "100%",
-    justifyContent: "center",
+    justifyContent: "space-between",
     marginBottom: 30,
   },
   card: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    padding: 20,
+    borderRadius: 35,
+    padding: 24,
     alignItems: "center",
     width: (width - 64) / 2,
-    minHeight: 200,
+    minHeight: 250,
+    // Shadow
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.05,
+    shadowRadius: 20,
     elevation: 5,
   },
-  iconContainer: {
-    marginBottom: 16,
-  },
-  iconWrapper: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: "#FFF9E6",
+  iconCircle: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: 20,
   },
   cardTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333333",
-    marginBottom: 8,
+    fontFamily: "Nunito_700Bold",
+    fontSize: 22,
+    color: "#1A2138",
+    marginBottom: 10,
     textAlign: "center",
   },
   cardDescription: {
-    fontSize: 13,
-    color: "#666666",
+    fontFamily: "Nunito_400Regular",
+    fontSize: 15,
+    color: "#8F9BB3",
     textAlign: "center",
-    lineHeight: 18,
+    lineHeight: 20,
   },
-  // Decorative elements
-  star: {
-    position: "absolute",
-    width: 8,
-    height: 8,
-    backgroundColor: "rgba(255, 255, 255, 0.6)",
-    borderRadius: 4,
-  },
-  plus: {
-    position: "absolute",
-    width: 16,
-    height: 16,
-  },
-  actionsContainer: {
+  actionsRow: {
     flexDirection: "row",
     gap: 16,
     width: "100%",
-    justifyContent: "center",
+    justifyContent: "space-between",
   },
   actionButton: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 30,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.4)",
-  },
-  actionIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
     justifyContent: "center",
-    marginRight: 8,
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 18,
+    borderRadius: 20,
+    gap: 10,
+    // Shadow
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.03,
+    shadowRadius: 10,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: "#F0F0F5",
   },
   actionText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Nunito_700Bold",
+    fontSize: 18,
+    color: "#2E3A59",
   },
 });
