@@ -9,6 +9,8 @@ import {
   Text,
   TouchableOpacity,
   View,
+  SafeAreaView,
+  StatusBar,
 } from "react-native";
 
 export default function CoursesScreen() {
@@ -50,126 +52,129 @@ export default function CoursesScreen() {
     );
   }
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Header */}
-      <LinearGradient
-        colors={["#9B59B6", "#8E44AD"] as const}
-        style={styles.header}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <View style={styles.headerContent}>
-          <View>
-            <Text style={styles.headerTitle}>Course Library</Text>
-            <Text style={styles.headerSubtitle}>
-              Choose your learning path with Michi! 🐱
-            </Text>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" />
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <LinearGradient
+          colors={["#9B59B6", "#8E44AD"] as const}
+          style={styles.header}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <View style={styles.headerContent}>
+            <View>
+              <Text style={styles.headerTitle}>Course Library</Text>
+              <Text style={styles.headerSubtitle}>
+                Choose your learning path with Michi! 🐱
+              </Text>
+            </View>
+            <View style={styles.mascotContainer}>
+              <Text style={styles.mascot}>📚</Text>
+            </View>
           </View>
-          <View style={styles.mascotContainer}>
-            <Text style={styles.mascot}>📚</Text>
+        </LinearGradient>
+
+        {/* Popular Courses Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Star size={20} color="#FF6B9D" />
+            <Text style={styles.sectionTitle}>Popular Courses</Text>
           </View>
-        </View>
-      </LinearGradient>
 
-      {/* Popular Courses Section */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Star size={20} color="#FF6B9D" />
-          <Text style={styles.sectionTitle}>Popular Courses</Text>
-        </View>
-
-        {courses.map(course => (
-          <TouchableOpacity
-            key={course.id}
-            style={styles.courseCard}
-            onPress={() => navigateToLesson(course.id)}
-          >
-            <LinearGradient
-              colors={[course.color_start, course.color_end]}
-              style={styles.courseGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
+          {courses.map(course => (
+            <TouchableOpacity
+              key={course.id}
+              style={styles.courseCard}
+              onPress={() => navigateToLesson(course.id)}
             >
-              <View style={styles.courseContent}>
-                <View style={styles.courseHeader}>
-                  <View style={styles.courseIconContainer}>
-                    <Text style={styles.courseIcon}>{course.icon}</Text>
+              <LinearGradient
+                colors={[course.color_start, course.color_end]}
+                style={styles.courseGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <View style={styles.courseContent}>
+                  <View style={styles.courseHeader}>
+                    <View style={styles.courseIconContainer}>
+                      <Text style={styles.courseIcon}>{course.icon}</Text>
+                    </View>
+                    <View style={styles.courseInfo}>
+                      <Text style={styles.courseTitle}>{course.title}</Text>
+                      <Text style={styles.courseSubtitle}>
+                        {course.subtitle || course.description}
+                      </Text>
+                    </View>
+                    <View style={styles.courseMeta}>
+                      <View
+                        style={[
+                          styles.levelBadge,
+                          { backgroundColor: getLevelColor(course.level) },
+                        ]}
+                      >
+                        <Text style={styles.levelText}>{course.level}</Text>
+                      </View>
+                    </View>
                   </View>
-                  <View style={styles.courseInfo}>
-                    <Text style={styles.courseTitle}>{course.title}</Text>
-                    <Text style={styles.courseSubtitle}>
-                      {course.subtitle || course.description}
-                    </Text>
+
+                  <View style={styles.courseStats}>
+                    <View style={styles.statItem}>
+                      <BookOpen size={16} color="#FFFFFF" />
+                      <Text style={styles.statText}>
+                        {course.total_words} words
+                      </Text>
+                    </View>
+                    <View style={styles.statItem}>
+                      <Users size={16} color="#FFFFFF" />
+                      <Text style={styles.statText}>
+                        {course.estimated_time}min
+                      </Text>
+                    </View>
                   </View>
-                  <View style={styles.courseMeta}>
-                    <View
-                      style={[
-                        styles.levelBadge,
-                        { backgroundColor: getLevelColor(course.level) },
-                      ]}
-                    >
-                      <Text style={styles.levelText}>{course.level}</Text>
+
+                  <View style={styles.progressSection}>
+                    <View style={styles.progressHeader}>
+                      <Text style={styles.progressLabel}>Category</Text>
+                      <Text style={styles.progressPercent}>
+                        {course.category}
+                      </Text>
                     </View>
                   </View>
                 </View>
+              </LinearGradient>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-                <View style={styles.courseStats}>
-                  <View style={styles.statItem}>
-                    <BookOpen size={16} color="#FFFFFF" />
-                    <Text style={styles.statText}>
-                      {course.total_words} words
-                    </Text>
-                  </View>
-                  <View style={styles.statItem}>
-                    <Users size={16} color="#FFFFFF" />
-                    <Text style={styles.statText}>
-                      {course.estimated_time}min
-                    </Text>
-                  </View>
-                </View>
+        {/* Coming Soon Section */}
+        <View style={styles.section}>
+          <Text style={{ ...styles.sectionTitle, marginBottom: 8 }}>
+            Coming Soon 🚀
+          </Text>
+          <View style={styles.comingSoonCard}>
+            <Text style={styles.comingSoonIcon}>🎯</Text>
+            <View style={styles.comingSoonContent}>
+              <Text style={styles.comingSoonTitle}>TOEFL Preparation</Text>
+              <Text style={styles.comingSoonSubtitle}>
+                Complete TOEFL vocabulary course with speaking practice
+              </Text>
+            </View>
+          </View>
 
-                <View style={styles.progressSection}>
-                  <View style={styles.progressHeader}>
-                    <Text style={styles.progressLabel}>Category</Text>
-                    <Text style={styles.progressPercent}>
-                      {course.category}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </LinearGradient>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Coming Soon Section */}
-      <View style={styles.section}>
-        <Text style={{ ...styles.sectionTitle, marginBottom: 8 }}>
-          Coming Soon 🚀
-        </Text>
-        <View style={styles.comingSoonCard}>
-          <Text style={styles.comingSoonIcon}>🎯</Text>
-          <View style={styles.comingSoonContent}>
-            <Text style={styles.comingSoonTitle}>TOEFL Preparation</Text>
-            <Text style={styles.comingSoonSubtitle}>
-              Complete TOEFL vocabulary course with speaking practice
-            </Text>
+          <View style={styles.comingSoonCard}>
+            <Text style={styles.comingSoonIcon}>🌍</Text>
+            <View style={styles.comingSoonContent}>
+              <Text style={styles.comingSoonTitle}>Travel English</Text>
+              <Text style={styles.comingSoonSubtitle}>
+                Essential phrases for travelers and tourists
+              </Text>
+            </View>
           </View>
         </View>
 
-        <View style={styles.comingSoonCard}>
-          <Text style={styles.comingSoonIcon}>🌍</Text>
-          <View style={styles.comingSoonContent}>
-            <Text style={styles.comingSoonTitle}>Travel English</Text>
-            <Text style={styles.comingSoonSubtitle}>
-              Essential phrases for travelers and tourists
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.bottomPadding} />
-    </ScrollView>
+        <View style={styles.bottomPadding} />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -178,8 +183,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F8F9FA",
   },
+  scrollView: {
+    flex: 1,
+  },
   header: {
-    paddingTop: 60,
+    paddingTop: 15,
     paddingBottom: 30,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,

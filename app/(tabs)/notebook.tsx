@@ -27,6 +27,8 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  SafeAreaView,
+  StatusBar,
 } from "react-native";
 
 import { WordDetailModal } from "../../components/WordDetailModal";
@@ -1156,7 +1158,9 @@ export default function NotebookScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" />
+      <View style={{ flex: 1 }}>
       {isLoadingVocabs && (
         <View style={styles.loadingOverlay}>
           <Text style={styles.loadingOverlayText}>
@@ -1626,7 +1630,8 @@ export default function NotebookScreen() {
         onToggleFavorite={toggleFavorite}
         onUpdate={handleWordDetailUpdate}
       />
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -1636,7 +1641,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F8F9FA",
   },
   header: {
-    paddingTop: 60,
+    paddingTop: 10,
     paddingBottom: 30,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
