@@ -58,13 +58,15 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="user"
+          name="personal"
           options={{
-            title: "User",
+            title: "Profile",
             tabBarIcon: ({ size, color }) => <UserBold size={28} color={color} />,
           }}
         />
-        <Tabs.Screen name="profile" options={{ href: null }} />
+        <Tabs.Screen name="user" options={{ href: null }} />
+        <Tabs.Screen name="stats" options={{ href: null }} />
+        <Tabs.Screen name="change-pwd" options={{ href: null }} />
       </Tabs>
       <ChatbotButton />
     </View>

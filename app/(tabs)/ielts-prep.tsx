@@ -27,7 +27,7 @@ export default function IELTSPrepScreen() {
 
       {/* Fixed Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>LUYỆN IELTS</Text>
+        <Text style={styles.headerTitle}>Luyện IELTS</Text>
         <View style={styles.headerRight}>
           <View style={styles.streakContainer}>
             <Text style={styles.streakIcon}>🔥</Text>
@@ -118,7 +118,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   header: {
     flexDirection: "row",

@@ -1,164 +1,60 @@
-import { useAuth } from "@/contexts/AuthContext";
-import * as ImagePicker from "expo-image-picker";
-import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import React, { useState } from "react";
 import {
-  Camera,
-  LocationEdit as Edit3,
-  Eye,
-  EyeOff,
-  LogOut,
-  Mail,
-  Save,
-  User as UserIcon,
-  X,
-} from "lucide-react-native";
-import { useState } from "react";
-import {
-  Alert,
-  Image,
-  Modal,
-  ScrollView,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
   View,
+  Image,
+  TouchableOpacity,
+  TextInput,
+  ScrollView,
+  SafeAreaView,
+  StatusBar,
+  Alert,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import * as ImagePicker from "expo-image-picker";
+import { Tabs, useRouter } from "expo-router";
+import { ShieldCheckLinear, CheckCircleBold, LockKeyholeLinear, PenBold } from "@solar-icons/react-native";
+import { useAuth } from "@/contexts/AuthContext";
+import HeaderWithBack from "../components/HeaderWithBack";
 
 export default function UserScreen() {
-  const { user, signIn, signOut, updateProfile, updatePassword, loading: isLoading } = useAuth();
-  const [isEditing, setIsEditing] = useState(false);
-  // const [isLoading, setIsLoading] = useState(false);
-  const [showAvatarModal, setShowAvatarModal] = useState(false);
-
-  // Form states
+  const { user, updateProfile } = useAuth();
+  const router = useRouter();
+  
   const [fullName, setFullName] = useState(user?.fullName || "");
-  const [email, setEmail] = useState(user?.email || "");
   const [avatarUri, setAvatarUri] = useState(user?.avatarUrl || "");
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSaveProfile = async () => {
     if (!fullName.trim()) {
-      Alert.alert("Error", "Full name is required");
+      Alert.alert("Lỗi", "Họ và tên không được để trống");
       return;
     }
-
-    // setIsLoading(true);
+    
+    setIsLoading(true);
     try {
-      console.log("Updated");
       const { error } = await updateProfile({
         fullName: fullName.trim(),
         avatarUrl: avatarUri,
       });
 
       if (error) {
-        Alert.alert("Error", "Failed to update profile. Please try again.");
+        Alert.alert("Lỗi", "Cập nhật thất bại. Vui lòng thử lại.");
       } else {
-        Alert.alert("Success", "Profile updated successfully!");
-        setIsEditing(false);
+        Alert.alert("Thành công", "Cập nhật hồ sơ thành công!");
       }
     } catch (err) {
-      console.error("Profile update error:", err);
-      Alert.alert("Error", "An unexpected error occurred.");
+      Alert.alert("Lỗi", "Đã có lỗi xảy ra.");
     } finally {
-      // setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleCancelEdit = () => {
-    setFullName(user?.fullName || "");
-    setEmail(user?.email || "");
-    setAvatarUri(user?.avatarUrl || "");
-    setIsEditing(false);
-    // setIsLoading(false);
-  };
-
-  const handleChangePassword = async () => {
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      Alert.alert("Error", "Please fill in all fields");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      Alert.alert("Error", "New passwords do not match");
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      Alert.alert("Error", "Password must be at least 6 characters");
-      return;
-    }
-
-    const hasLetter = /[a-zA-Z]/.test(newPassword);
-    const hasNumber = /[0-9]/.test(newPassword);
-    if (!hasLetter || !hasNumber) {
-      Alert.alert("Error", "Password must contain both letters and numbers");
-      return;
-    }
-
-    try {
-      // Xác thực current password trước
-      const { error: signInError } = await signIn(email, currentPassword);
-      if (signInError) {
-        Alert.alert("Error", "Current password is incorrect");
-        return;
-      }
-
-      // Nếu đúng, tiếp tục đổi mật khẩu
-      const { error } = await updatePassword(newPassword);
-      if (error) {
-        Alert.alert("Error", error.message || "Failed to update password");
-      } else {
-        Alert.alert("Success", "Password updated successfully!");
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-      }
-    } catch (err) {
-      console.error(err);
-      Alert.alert("Error", "An error occurred");
-    }
-  };
-
-  const handleLogout = async () => {
-    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Sign Out",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            const { error } = await signOut();
-            if (error) {
-              Alert.alert("Error", "Failed to sign out. Please try again.");
-            } else {
-              router.replace("/(auth)/login");
-            }
-          } catch (err) {
-            console.error("Logout error:", err);
-            Alert.alert("Error", "An error occurred while signing out.");
-          }
-        },
-      },
-    ]);
-  };
-
-  const pickImageFromLibrary = async () => {
+  const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(
-        "Permission Required",
-        "Sorry, we need camera roll permissions to change your avatar."
-      );
+      Alert.alert("Cấp quyền", "Vui lòng cấp quyền truy cập thư viện ảnh để đổi ảnh đại diện.");
       return;
     }
 
@@ -171,610 +67,233 @@ export default function UserScreen() {
 
     if (!result.canceled && result.assets[0]) {
       setAvatarUri(result.assets[0].uri);
-      setShowAvatarModal(false);
     }
-  };
-
-  const takePhoto = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert(
-        "Permission Required",
-        "Sorry, we need camera permissions to take a photo."
-      );
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      setAvatarUri(result.assets[0].uri);
-      setShowAvatarModal(false);
-    }
-  };
-
-  const removeAvatar = () => {
-    setAvatarUri("");
-    setShowAvatarModal(false);
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <LinearGradient
-        colors={["#9B59B6", "#8E44AD"]}
-        style={styles.header}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <View style={styles.headerContent}>
-          <View style={styles.headerInfo}>
-            <Text style={styles.headerTitle}>User Profile</Text>
-            <Text style={styles.headerSubtitle}>
-              Manage your account settings
-            </Text>
-          </View>
-          <View style={styles.mascotContainer}>
-            <Text style={styles.mascot}>👤</Text>
-          </View>
-        </View>
-      </LinearGradient>
+    <SafeAreaView style={styles.container}>
+      <Tabs.Screen options={{ tabBarStyle: { display: 'none' } }} />
+      <StatusBar barStyle="dark-content" />
+      
+      <HeaderWithBack 
+        title="Thông tin cá nhân" 
+        onBackPress={() => router.push("/(tabs)/personal")}
+      />
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Profile Section */}
-        <View style={styles.profileSection}>
-          <View style={styles.avatarSection}>
-            <TouchableOpacity
-              style={styles.avatarContainer}
-              onPress={() => isEditing && setShowAvatarModal(true)}
-              disabled={!isEditing}
-            >
-              {avatarUri ? (
-                <Image source={{ uri: avatarUri }} style={styles.avatar} />
-              ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <UserIcon size={40} color="#9B59B6" />
-                </View>
-              )}
-              {isEditing && (
-                <View style={styles.avatarEditOverlay}>
-                  <Camera size={20} color="#FFFFFF" />
-                </View>
-              )}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        
+        {/* Header Background & Avatar Area */}
+        <View style={styles.topSection}>
+          <LinearGradient
+            colors={["#4CAF50", "#8BC34A"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.gradientBg}
+          />
+
+          <View style={styles.avatarWrapper}>
+            <View style={styles.avatarBorder}>
+              <Image
+                source={avatarUri ? { uri: avatarUri } : require("../../assets/images/avatar.png")}
+                style={styles.avatar}
+              />
+            </View>
+            <TouchableOpacity style={styles.editButton} onPress={pickImage} activeOpacity={0.8}>
+               <PenBold size={18} color="#FFFFFF" />
             </TouchableOpacity>
-            <Text style={styles.avatarLabel}>
-              {isEditing ? "Tap to change avatar" : "Profile Picture"}
-            </Text>
-          </View>
-
-          {/* Profile Form */}
-          <View style={styles.formSection}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Full Name</Text>
-              <View style={styles.inputContainer}>
-                <UserIcon size={20} color="#7F8C8D" />
-                <TextInput
-                  style={[styles.input, !isEditing && styles.inputDisabled]}
-                  value={fullName}
-                  onChangeText={setFullName}
-                  placeholder="Enter your full name"
-                  placeholderTextColor="#BDC3C7"
-                  editable={isEditing}
-                />
-              </View>
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Email</Text>
-              <View style={styles.inputContainer}>
-                <Mail size={20} color="#7F8C8D" />
-                <TextInput
-                  style={[styles.input, styles.inputDisabled]}
-                  value={email}
-                  placeholder="Email address"
-                  placeholderTextColor="#BDC3C7"
-                  editable={false}
-                />
-              </View>
-              <Text style={styles.inputNote}>
-                Email cannot be changed from this screen
-              </Text>
-            </View>
-          </View>
-
-          {/* Action Buttons */}
-          <View style={styles.actionSection}>
-            {!isEditing ? (
-              <TouchableOpacity
-                style={styles.editButton}
-                onPress={() => setIsEditing(true)}
-              >
-                <Edit3 size={20} color="#FFFFFF" />
-                <Text style={styles.editButtonText}>Edit Profile</Text>
-              </TouchableOpacity>
-            ) : (
-              <View style={styles.editActions}>
-                <TouchableOpacity
-                  style={styles.cancelButton}
-                  onPress={handleCancelEdit}
-                  disabled={isLoading}
-                >
-                  <X size={20} color="#E74C3C" />
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.saveButton,
-                    isLoading && styles.disabledButton,
-                  ]}
-                  onPress={handleSaveProfile}
-                  disabled={isLoading}
-                >
-                  <Save size={20} color="#FFFFFF" />
-                  <Text style={styles.saveButtonText}>
-                    {isLoading ? "Saving..." : "Save"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
           </View>
         </View>
 
-        {/* Change Password Pane */}
-        <View style={styles.changePasswordSection}>
-          <Text style={styles.sectionTitle}>Change Password</Text>
-
+        {/* Form Area */}
+        <View style={styles.formContainer}>
+          {/* Full Name */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Current Password</Text>
+            <Text style={styles.label}>HỌ VÀ TÊN</Text>
             <View style={styles.inputContainer}>
               <TextInput
-                style={[styles.input, { flex: 1 }]}
-                secureTextEntry={!showCurrentPassword}
-                placeholder="Enter current password"
-                placeholderTextColor="#BDC3C7"
-                value={currentPassword}
-                onChangeText={setCurrentPassword}
+                style={styles.input}
+                value={fullName}
+                onChangeText={setFullName}
+                placeholder="Nhập họ và tên"
+                placeholderTextColor="#A0A0A0"
               />
-              <TouchableOpacity onPress={() => setShowCurrentPassword(!showCurrentPassword)}>
-                {showCurrentPassword ? <EyeOff size={20} color="#7F8C8D" /> : <Eye size={20} color="#7F8C8D" />}
-              </TouchableOpacity>
             </View>
           </View>
 
+          {/* Email */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>New Password</Text>
+            <Text style={styles.label}>EMAIL</Text>
             <View style={styles.inputContainer}>
               <TextInput
-                style={[styles.input, { flex: 1 }]}
-                secureTextEntry={!showNewPassword}
-                placeholder="Enter new password"
-                placeholderTextColor="#BDC3C7"
-                value={newPassword}
-                onChangeText={setNewPassword}
+                style={[styles.input, styles.inputDisabled]}
+                value={user?.email || ""}
+                editable={false}
               />
-              <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)}>
-                {showNewPassword ? <EyeOff size={20} color="#7F8C8D" /> : <Eye size={20} color="#7F8C8D" />}
-              </TouchableOpacity>
+              <LockKeyholeLinear size={20} color="#585C61" />
             </View>
+            <Text style={styles.helpText}>
+              Email không thể thay đổi để bảo mật tài khoản.
+            </Text>
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Confirm New Password</Text>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={[styles.input, { flex: 1 }]}
-                secureTextEntry={!showConfirmPassword}
-                placeholder="Re-enter new password"
-                placeholderTextColor="#BDC3C7"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-              />
-              <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                {showConfirmPassword ? <EyeOff size={20} color="#7F8C8D" /> : <Eye size={20} color="#7F8C8D" />}
-              </TouchableOpacity>
-            </View>
+          {/* Verified Account Banner */}
+          <View style={styles.verifiedBanner}>
+            <ShieldCheckLinear size={24} color="#55BA5D" />
+            <Text style={styles.verifiedText}>Tài khoản đã xác thực</Text>
+            <CheckCircleBold size={24} color="#55BA5D" />
           </View>
 
-          <TouchableOpacity
-            style={styles.saveButton}
-            onPress={handleChangePassword}
+        </View>
+
+        {/* Save Button */}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity 
+            style={[styles.saveButton, isLoading && styles.saveButtonDisabled]} 
+            onPress={handleSaveProfile}
+            disabled={isLoading}
+            activeOpacity={0.8}
           >
-            <Text style={styles.saveButtonText}>Update Password</Text>
+            <Text style={styles.saveButtonText}>{isLoading ? "Đang lưu..." : "Lưu"}</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Account Actions */}
-        <View style={styles.accountSection}>
-          <Text style={styles.sectionTitle}>Account Actions</Text>
-
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <LinearGradient
-              colors={["#E74C3C", "#C0392B"]}
-              style={styles.logoutGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <LogOut size={20} color="#FFFFFF" />
-              <Text style={styles.logoutButtonText}>Sign Out</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
-
-        {/* App Info */}
-        <View style={styles.appInfoSection}>
-          <Text style={styles.appInfoTitle}>EngLearn</Text>
-          <Text style={styles.appInfoVersion}>Version 1.0.0</Text>
-          <Text style={styles.appInfoDescription}>
-            Learn English with Mochi & Michi! 🍡🐱
-          </Text>
-        </View>
+        
       </ScrollView>
-
-      {/* Avatar Selection Modal */}
-      <Modal
-        visible={showAvatarModal}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setShowAvatarModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Change Avatar</Text>
-
-            <TouchableOpacity style={styles.modalOption} onPress={takePhoto}>
-              <Camera size={24} color="#3498DB" />
-              <Text style={styles.modalOptionText}>Take Photo</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.modalOption}
-              onPress={pickImageFromLibrary}
-            >
-              <UserIcon size={24} color="#9B59B6" />
-              <Text style={styles.modalOptionText}>Choose from Library</Text>
-            </TouchableOpacity>
-
-            {avatarUri && (
-              <TouchableOpacity
-                style={styles.modalOption}
-                onPress={removeAvatar}
-              >
-                <X size={24} color="#E74C3C" />
-                <Text style={styles.modalOptionText}>Remove Avatar</Text>
-              </TouchableOpacity>
-            )}
-
-            <TouchableOpacity
-              style={styles.modalCancel}
-              onPress={() => setShowAvatarModal(false)}
-            >
-              <Text style={styles.modalCancelText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
-  },
-  header: {
-    paddingTop: 60,
-    paddingBottom: 30,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-  },
-  headerContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  headerInfo: {
-    flex: 1,
-  },
-  headerTitle: {
-    fontSize: 24,
-    color: "#FFFFFF",
-    fontWeight: "bold",
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: "#FFFFFF",
-    opacity: 0.9,
-    marginTop: 4,
-  },
-  mascotContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    borderRadius: 25,
-    padding: 10,
-  },
-  mascot: {
-    fontSize: 30,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  profileSection: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    padding: 25,
-    marginTop: 20,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
   },
-  avatarSection: {
+  scrollContent: {
+    flexGrow: 1,
+  },
+  topSection: {
     alignItems: "center",
-    marginBottom: 30,
+    marginBottom: 35,
+    position: 'relative',
+    paddingBottom: 40, // Cân bằng với marginTop phía trên để căn giữa avatar (40 + 156 + 40 = 236)
   },
-  avatarContainer: {
+  gradientBg: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 236, // Chiều cao chính xác để top và bottom bằng nhau
+  },
+  avatarWrapper: {
     position: "relative",
-    marginBottom: 10,
+    marginTop: 40, // Pushes avatar down to sit cleanly inside the green gradient
+  },
+  avatarBorder: {
+    width: 156,
+    height: 156,
+    borderRadius: 78,
+    backgroundColor: "#FFFFFF",
+    padding: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
   },
   avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 3,
-    borderColor: "#9B59B6",
+    width: "100%",
+    height: "100%",
+    borderRadius: 78,
+    backgroundColor: "#F3F4F6",
   },
-  avatarPlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: "#F8F9FA",
-    borderWidth: 3,
-    borderColor: "#9B59B6",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarEditOverlay: {
+  editButton: {
     position: "absolute",
-    bottom: 0,
-    right: 0,
-    backgroundColor: "#9B59B6",
-    borderRadius: 15,
-    width: 30,
-    height: 30,
+    bottom: 5,
+    right: 5,
+    backgroundColor: "#55BA5D",
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: 3,
+    borderColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 2,
-    borderColor: "#FFFFFF",
   },
-  avatarLabel: {
-    fontSize: 14,
-    color: "#7F8C8D",
-    textAlign: "center",
-  },
-  formSection: {
-    marginBottom: 25,
+  formContainer: {
+    paddingHorizontal: 25,
   },
   inputGroup: {
     marginBottom: 20,
   },
-  inputLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#2C3E50",
+  label: {
+    fontFamily: "Lexend_700Bold",
+    fontSize: 13,
+    color: "#585C61",
     marginBottom: 8,
+    letterSpacing: 0.5,
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F8F9FA",
-    borderRadius: 12,
+    backgroundColor: "#EEF1F7",
+    borderRadius: 16,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderWidth: 2,
-    borderColor: "#E8E6E8",
+    height: 60,
   },
   input: {
     flex: 1,
+    fontFamily: "WorkSans_400Regular",
     fontSize: 16,
-    color: "#2C3E50",
-    marginLeft: 10,
+    color: "#000000",
   },
   inputDisabled: {
-    color: "#7F8C8D",
+    color: "#585C61",
   },
-  inputNote: {
-    fontSize: 12,
-    color: "#95A5A6",
-    marginTop: 4,
-    fontStyle: "italic",
+  helpText: {
+    fontSize: 12, // Usually uses the global font or standard text here 
+    color: "#585C61",
+    marginTop: 8,
+    marginLeft: 4,
   },
-  actionSection: {
-    alignItems: "center",
-  },
-  editButton: {
+  verifiedBanner: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#9B59B6",
-    borderRadius: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-  },
-  editButtonText: {
-    fontSize: 16,
-    color: "#FFFFFF",
-    fontWeight: "600",
-    marginLeft: 8,
-  },
-  editActions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-  },
-  cancelButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    paddingVertical: 14,
+    backgroundColor: "#E1FFE4",
+    borderRadius: 30,
     paddingHorizontal: 20,
-    borderWidth: 2,
-    borderColor: "#E74C3C",
-    flex: 1,
-    marginRight: 10,
-    justifyContent: "center",
+    paddingVertical: 18,
+    marginTop: 10,
+    marginBottom: 30,
   },
-  cancelButtonText: {
+  verifiedText: {
+    flex: 1,
+    fontFamily: "Lexend_600SemiBold",
     fontSize: 16,
-    color: "#E74C3C",
-    fontWeight: "600",
-    marginLeft: 8,
+    color: "#000000",
+    marginLeft: 14,
+  },
+  buttonContainer: {
+    paddingHorizontal: 25,
+    marginTop: "auto",
+    marginBottom: 30,
   },
   saveButton: {
-    flexDirection: "row",
+    backgroundColor: "#55BA5D",
+    borderRadius: 30,
+    height: 60,
     alignItems: "center",
-    backgroundColor: "#2ECC71",
-    borderRadius: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    flex: 1,
-    marginLeft: 10,
     justifyContent: "center",
+    shadowColor: "#55BA5D",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  saveButtonDisabled: {
+    opacity: 0.7,
   },
   saveButtonText: {
-    fontSize: 16,
-    color: "#FFFFFF",
-    fontWeight: "600",
-    marginLeft: 8,
-  },
-  disabledButton: {
-    opacity: 0.6,
-  },
-  accountSection: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    padding: 25,
-    marginTop: 20,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-  },
-  sectionTitle: {
+    fontFamily: "Lexend_700Bold",
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#2C3E50",
-    marginBottom: 20,
-  },
-  logoutButton: {
-    borderRadius: 16,
-    overflow: "hidden",
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-  },
-  logoutGradient: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-  },
-  logoutButtonText: {
-    fontSize: 16,
     color: "#FFFFFF",
-    fontWeight: "600",
-    marginLeft: 8,
   },
-  appInfoSection: {
-    alignItems: "center",
-    paddingVertical: 30,
-    marginTop: 20,
-  },
-  appInfoTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#9B59B6",
-    marginBottom: 4,
-  },
-  appInfoVersion: {
-    fontSize: 14,
-    color: "#7F8C8D",
-    marginBottom: 8,
-  },
-  appInfoDescription: {
-    fontSize: 16,
-    color: "#2C3E50",
-    textAlign: "center",
-    lineHeight: 22,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 25,
-    paddingBottom: 40,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#2C3E50",
-    textAlign: "center",
-    marginBottom: 25,
-  },
-  modalOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    backgroundColor: "#F8F9FA",
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  modalOptionText: {
-    fontSize: 16,
-    color: "#2C3E50",
-    fontWeight: "500",
-    marginLeft: 16,
-  },
-  modalCancel: {
-    alignItems: "center",
-    paddingVertical: 16,
-    marginTop: 10,
-  },
-  modalCancelText: {
-    fontSize: 16,
-    color: "#7F8C8D",
-    fontWeight: "500",
-  },
-  changePasswordSection: {
-  backgroundColor: "#FFFFFF",
-  borderRadius: 20,
-  padding: 25,
-  marginTop: 20,
-  elevation: 3,
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.1,
-  shadowRadius: 8,
-},
-});
+});
