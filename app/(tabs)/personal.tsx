@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   StatusBar,
   Platform,
+  Alert,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -23,8 +24,34 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function PersonalScreen() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const router = useRouter();
+
+  const handleLogout = () => {
+    Alert.alert("Đăng xuất", "Bạn có chắc chắn muốn đăng xuất?", [
+      {
+        text: "Hủy",
+        style: "cancel",
+      },
+      {
+        text: "Đăng xuất",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const { error } = await signOut();
+            if (error) {
+              Alert.alert("Lỗi", "Đăng xuất thất bại. Vui lòng thử lại.");
+            } else {
+              router.replace("/(auth)/login");
+            }
+          } catch (err) {
+            console.error("Logout error:", err);
+            Alert.alert("Lỗi", "Đã có lỗi xảy ra.");
+          }
+        },
+      },
+    ]);
+  };
 
   const menuItems = [
     {
@@ -49,7 +76,7 @@ export default function PersonalScreen() {
       title: "Cài đặt",
       description: "Tùy chỉnh thông báo và ứng dụng",
       icon: <SettingsLinear size={24} color="#00BD50" />,
-      onPress: () => { },
+      onPress: () => router.push("/(tabs)/settings"),
     },
   ];
 
@@ -127,7 +154,7 @@ export default function PersonalScreen() {
         </View>
 
         {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutWrapper} activeOpacity={0.8}>
+        <TouchableOpacity style={styles.logoutWrapper} activeOpacity={0.8} onPress={handleLogout}>
           <LinearGradient
             colors={["#FF5252", "#D32F2F"]}
             start={{ x: 0, y: 0 }}
