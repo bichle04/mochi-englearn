@@ -203,7 +203,7 @@ export default function HomeScreen() {
 
             <TouchableOpacity
               style={[styles.featureCard, { backgroundColor: "#B9E1FF" }]}
-              onPress={() => router.push("/my-flashcards" as any)}
+              onPress={() => router.push("/flashcard")}
             >
               <Text style={[styles.cardTitle, { color: "#193368" }]}>Flashcards</Text>
               <Image
