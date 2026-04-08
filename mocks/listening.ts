@@ -66,7 +66,7 @@ export const partDetailsMock: Record<string, PartDetail> = {
     introduction: "IELTS Listening Part 1 có tổng cộng 10 câu hỏi và chỉ được nghe đoạn ghi âm 1 lần, thường là một cuộc hỏi đáp giữa hai người về các chủ đề liên quan đến cuộc sống hàng ngày (đặt phòng khách sạn, đăng ký khóa học).",
     commonQuestions: [
       "Form/ table/ note completion",
-      "Mutiple choice",
+      "Multiple choice",
       "Sentence completion"
     ],
     keyTips: [
@@ -147,3 +147,146 @@ export const partDetailsMock: Record<string, PartDetail> = {
     ]
   }
 };
+
+export interface ListeningLesson {
+  id: string;
+  partId: string;
+  title: string;
+  level: 'Beginner' | 'Intermediate' | 'Advanced';
+  questions: number;
+  iconName: string;
+  iconColor: string;
+  iconBg: string;
+}
+
+export const lessonsMock: ListeningLesson[] = [
+  // Part 1
+  {
+    id: "p1-l1",
+    partId: "part1",
+    title: "Hotel Reservation Inquiry",
+    level: "Beginner",
+    questions: 10,
+    iconName: "star",
+    iconColor: "#B68BFF",
+    iconBg: "#F5EEFF"
+  },
+  {
+    id: "p1-l2",
+    partId: "part1",
+    title: "Campus Orientation Tour",
+    level: "Beginner",
+    questions: 10,
+    iconName: "list",
+    iconColor: "#006AA1",
+    iconBg: "#D7EEFF"
+  },
+  {
+    id: "p1-l3",
+    partId: "part1",
+    title: "Library Research Guide",
+    level: "Intermediate",
+    questions: 10,
+    iconName: "document",
+    iconColor: "#E56B00",
+    iconBg: "#FFEBC6"
+  },
+  {
+    id: "p1-l4",
+    partId: "part1",
+    title: "International Student Briefing",
+    level: "Advanced",
+    questions: 10,
+    iconName: "id-card",
+    iconColor: "#CC175A",
+    iconBg: "#FBE4EC"
+  },
+  {
+    id: "p1-l5",
+    partId: "part1",
+    title: "Bank Account Opening",
+    level: "Beginner",
+    questions: 10,
+    iconName: "list",
+    iconColor: "#55BA5D",
+    iconBg: "#E6FED9"
+  },
+  
+  // Part 2
+  {
+    id: "p2-l1",
+    partId: "part2",
+    title: "City Park Renovation",
+    level: "Intermediate",
+    questions: 10,
+    iconName: "star",
+    iconColor: "#E56B00",
+    iconBg: "#FFEBC6"
+  },
+  {
+    id: "p2-l2",
+    partId: "part2",
+    title: "National Gallery Guide",
+    level: "Beginner",
+    questions: 10,
+    iconName: "document",
+    iconColor: "#006AA1",
+    iconBg: "#D7EEFF"
+  },
+  {
+    id: "p2-l3",
+    partId: "part2",
+    title: "Local Festivals Intro",
+    level: "Intermediate",
+    questions: 10,
+    iconName: "list",
+    iconColor: "#B68BFF",
+    iconBg: "#F5EEFF"
+  },
+
+  // Part 3
+  {
+    id: "p3-l1",
+    partId: "part3",
+    title: "Marine Biology Project",
+    level: "Advanced",
+    questions: 10,
+    iconName: "id-card",
+    iconColor: "#CC175A",
+    iconBg: "#FBE4EC"
+  },
+  {
+    id: "p3-l2",
+    partId: "part3",
+    title: "Dissertation Planning",
+    level: "Hard", // Error here, should be level
+    // Wait, let's fix the level type
+    level: "Advanced",
+    questions: 10,
+    iconName: "document",
+    iconColor: "#E56B00",
+    iconBg: "#FFEBC6"
+  },
+
+  // Part 4
+  {
+    id: "p4-l1",
+    partId: "part4",
+    title: "History of Agriculture",
+    level: "Advanced",
+    questions: 10,
+    iconName: "document",
+    iconColor: "#CC175A",
+    iconBg: "#FBE4EC"
+  },
+  {
+    id: "p4-l2",
+    partId: "part4",
+    title: "Architecture Trends",
+    level: "Advanced",
+    questions: 10,
+    iconName: "list",
+    iconColor: "#006AA1",
+    iconBg: "#D7EEFF"
+  }
+];

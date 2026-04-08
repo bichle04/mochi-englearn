@@ -77,7 +77,11 @@ export default function PartDetailScreen() {
 
       {/* Floating Bottom Button */}
       <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.startButton} activeOpacity={0.8}>
+        <TouchableOpacity 
+          style={styles.startButton} 
+          activeOpacity={0.8}
+          onPress={() => router.push({ pathname: "/listening/lessons", params: { id: data.partId } })}
+        >
           <Text style={styles.startButtonText}>Bắt đầu khám phá</Text>
           <ArrowRight size={20} color="#FFF" style={{ marginLeft: 8 }} />
         </TouchableOpacity>
