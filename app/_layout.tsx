@@ -59,6 +59,8 @@ export default function RootLayout() {
             <Stack.Screen name="lesson/[id]" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="speaking" options={{ headerShown: false }} />
+            <Stack.Screen name="listening/index" options={{ headerShown: false }} />
+            <Stack.Screen name="listening/part-detail" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
             <Stack.Screen name="loading" options={{ headerShown: false }} />
           </Stack>
