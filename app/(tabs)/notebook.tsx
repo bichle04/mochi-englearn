@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   Alert,
   Animated,
@@ -27,7 +28,6 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  SafeAreaView,
   StatusBar,
 } from "react-native";
 
