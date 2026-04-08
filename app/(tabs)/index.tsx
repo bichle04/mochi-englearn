@@ -1,6 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { Flame, Bell } from "lucide-react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   Image,
   ScrollView,
@@ -8,7 +9,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  SafeAreaView,
   Platform,
   StatusBar
 } from "react-native";

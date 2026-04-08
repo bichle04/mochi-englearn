@@ -1,6 +1,6 @@
 import { Exercise } from "@/types/lesson";
 import * as Speech from "expo-speech";
-import { BookOpen, Volume2 } from "lucide-react-native";
+import { BookOpen, Volume2, Frown, Smile, ChevronLeft, ChevronRight } from "lucide-react-native";
 import React from "react";
 import {
   KeyboardAvoidingView,
@@ -18,6 +18,9 @@ interface FillBlankProps {
   showAnswer: boolean;
   userAnswer: string;
   setUserAnswer: (answer: string) => void;
+  onCheck?: () => void;
+  onNext?: () => void;
+  onPrev?: () => void;
 }
 
 export const FillBlankExercise: React.FC<FillBlankProps> = ({
@@ -25,84 +28,101 @@ export const FillBlankExercise: React.FC<FillBlankProps> = ({
   showAnswer,
   userAnswer,
   setUserAnswer,
+  onCheck,
+  onNext,
+  onPrev,
 }) => {
+  const isCorrect = userAnswer.toLowerCase().trim() === exercise.correctAnswer?.toLowerCase();
+  const hasTyped = userAnswer.trim().length > 0;
+
   return (
     <KeyboardAvoidingView
-      style={styles.exerciseContainer}
+      style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={100}
     >
       <ScrollView
-        contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.questionCard}>
-          <View style={styles.exerciseHeader}>
-            <BookOpen size={24} color="#9B59B6" />
-            <Text style={styles.exerciseTitle}>
-              Fill in the blank (type your answer)
-            </Text>
+        <View style={styles.card}>
+          <View style={styles.header}>
+            <BookOpen size={20} color="#7C4DFF" />
+            <Text style={styles.title}>Fill in the blank</Text>
           </View>
 
           <Text style={styles.sentenceText}>{exercise.blankedSentence}</Text>
 
-          {showAnswer ? (
-            <View style={styles.answerReveal}>
-              {userAnswer.toLowerCase().trim() ===
-              exercise.correctAnswer?.toLowerCase() ? (
-                <Text style={styles.resultText}>✅ Correct!</Text>
-              ) : (
-                <Text style={styles.resultTextWrong}>
-                  ❌ Your answer: &ldquo;{userAnswer}&rdquo;
-                </Text>
-              )}
-              <Text style={styles.correctAnswerLabel}>Correct answer:</Text>
-              <Text style={styles.correctAnswerText}>
-                {exercise.correctAnswer}
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Type your answer:</Text>
-              <TextInput
-                style={[
-                  styles.textInput,
-                  showAnswer &&
-                  userAnswer.toLowerCase().trim() ===
-                    exercise.correctAnswer?.toLowerCase()
-                    ? styles.correctInput
-                    : showAnswer && userAnswer.trim() !== ""
-                    ? styles.wrongInput
-                    : null,
-                ]}
-                value={userAnswer}
-                onChangeText={setUserAnswer}
-                placeholder="Enter the missing word..."
-                placeholderTextColor="#BDC3C7"
-                editable={!showAnswer}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
-          )}
+          <Text style={styles.inputLabel}>Type your answer:</Text>
+          <TextInput
+            style={styles.textInput}
+            value={userAnswer}
+            onChangeText={setUserAnswer}
+            placeholder="Enter the missing word..."
+            placeholderTextColor="#BDC3C7"
+            editable={!showAnswer}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
 
-          <View style={styles.ipaHintContainer}>
-            <Text style={styles.ipaHintLabel}>Pronunciation hint:</Text>
-            <Text style={styles.ipaHintText}>{exercise.ipaHint}</Text>
+          <View style={styles.hintRow}>
+            <View>
+              <Text style={styles.hintLabel}>PRONUNCIATION HINT:</Text>
+              <Text style={styles.hintText}>{exercise.ipaHint}</Text>
+            </View>
             <TouchableOpacity
               style={styles.audioButton}
               onPress={() => {
-                Speech.speak(exercise.word.word, {
-                  language: "en",
-                  pitch: 1,
-                  rate: 1,
-                });
+                const textToSpeak = exercise.word?.word || exercise.correctAnswer;
+                if (textToSpeak) {
+                  Speech.speak(textToSpeak, {
+                    language: "en",
+                  });
+                }
               }}
             >
-              <Volume2 size={16} color="#FFFFFF" />
+              <Volume2 size={24} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
+
+          {showAnswer ? (
+            <View style={styles.feedbackContainer}>
+              <View style={[styles.alertBox, isCorrect ? styles.alertCorrect : styles.alertWrong]}>
+                {isCorrect ? (
+                  <Smile size={32} color="#55BA5D" style={styles.alertIcon} />
+                ) : (
+                  <Frown size={32} color="#FF4040" style={styles.alertIcon} />
+                )}
+                <View style={styles.alertTextContent}>
+                  <Text style={[styles.alertTitle, isCorrect ? { color: "#55BA5D" } : { color: "#FF4040" }]}>
+                    {isCorrect ? "Tuyệt vời!" : "Sai rồi :("}
+                  </Text>
+                  <Text style={[styles.alertSubtitle, isCorrect ? { color: "#55BA5D" } : { color: "#FF4040" }]}>
+                    {isCorrect ? "Bạn đã điền đúng rồi." : `Đáp án đúng: ${exercise.correctAnswer}`}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.navButtonsRow}>
+                <TouchableOpacity style={styles.prevButton} onPress={onPrev}>
+                  <ChevronLeft size={20} color="#94A3B8" />
+                  <Text style={styles.prevButtonText}>Trước</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.nextButton} onPress={onNext}>
+                  <Text style={styles.nextButtonText}>Tiếp theo</Text>
+                  <ChevronRight size={20} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={[styles.checkButton, hasTyped ? styles.checkButtonActive : styles.checkButtonInactive]}
+              disabled={!hasTyped}
+              onPress={onCheck}
+            >
+              <Text style={[styles.checkButtonText, !hasTyped && { color: "#FFFFFF" }]}>Check Answer</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -110,133 +130,173 @@ export const FillBlankExercise: React.FC<FillBlankProps> = ({
 };
 
 const styles = StyleSheet.create({
-  exerciseContainer: {
+  container: {
     flex: 1,
   },
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-  },
-  questionCard: {
+  card: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    padding: 30,
-    width: "100%",
-    minHeight: 500,
-    elevation: 8,
-    shadowColor: "#000",
+    borderRadius: 28,
+    paddingHorizontal: 24,
+    paddingTop: 32,
+    paddingBottom: 24,
+    shadowColor: "#64748B", // softer shadow color instead of pure black
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 1, // lowest possible shadow on Android without disappearing
+    borderWidth: 1,
+    borderColor: "#F8FAFC", // super faint border
+    marginBottom: 40,
+    marginHorizontal: 4, // prevent shadow clipping
   },
-  exerciseHeader: {
+  header: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 30,
+    marginBottom: 40,
   },
-  exerciseTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#2C3E50",
-    marginLeft: 12,
+  title: {
+    fontFamily: "Lexend_700Bold",
+    fontSize: 15,
+    color: "#334155",
+    marginLeft: 10,
   },
   sentenceText: {
-    fontSize: 20,
-    color: "#2C3E50",
+    fontFamily: "Lexend_600SemiBold",
+    fontSize: 17,
+    color: "#1E293B",
     textAlign: "center",
     lineHeight: 30,
-    marginBottom: 20,
-  },
-  ipaHintContainer: {
-    backgroundColor: "#F8F9FA",
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 20,
-    alignItems: "center",
-  },
-  ipaHintLabel: {
-    fontSize: 14,
-    color: "#7F8C8D",
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-  ipaHintText: {
-    fontSize: 18,
-    color: "#9B59B6",
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  audioButton: {
-    backgroundColor: "#FF6B9D",
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "center",
-    marginBottom: 20,
-  },
-  audioButtonText: {
-    fontSize: 14,
-    color: "#FFFFFF",
-    fontWeight: "600",
-    marginLeft: 6,
-  },
-  inputContainer: {
-    marginTop: 20,
+    marginBottom: 40,
   },
   inputLabel: {
-    fontSize: 16,
-    color: "#2C3E50",
-    fontWeight: "600",
-    marginBottom: 8,
+    fontFamily: "Lexend_700Bold",
+    fontSize: 14,
+    color: "#475569",
     textAlign: "center",
+    marginBottom: 16,
   },
   textInput: {
-    backgroundColor: "#F8F9FA",
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: "#F8FAFC",
+    borderRadius: 20,
+    height: 64,
+    paddingHorizontal: 20,
+    fontFamily: "Lexend_400Regular",
     fontSize: 16,
-    color: "#2C3E50",
-    borderWidth: 2,
-    borderColor: "#E8E6E8",
+    color: "#0F172A",
     textAlign: "center",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    marginBottom: 40,
   },
-  correctInput: {
-    borderColor: "#2ECC71",
-    backgroundColor: "rgba(46, 204, 113, 0.1)",
-  },
-  wrongInput: {
-    borderColor: "#E74C3C",
-    backgroundColor: "rgba(231, 76, 60, 0.1)",
-  },
-  answerReveal: {
-    marginTop: 20,
+  hintRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 40,
   },
-  correctAnswerLabel: {
+  hintLabel: {
+    fontFamily: "Lexend_700Bold",
+    fontSize: 11,
+    color: "#94A3B8",
+    letterSpacing: 1.2,
+    marginBottom: 8,
+  },
+  hintText: {
+    fontFamily: "Lexend_700Bold",
     fontSize: 16,
-    color: "#7F8C8D",
+    color: "#7C4DFF",
+  },
+  audioButton: {
+    width: 56,
+    height: 56,
+    backgroundColor: "#55BA5D",
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  checkButton: {
+    height: 60,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  checkButtonActive: {
+    backgroundColor: "#55BA5D",
+  },
+  checkButtonInactive: {
+    backgroundColor: "#BDC3C7", // The requested gray color
+  },
+  checkButtonText: {
+    fontFamily: "Lexend_700Bold",
+    fontSize: 16,
+    color: "#FFFFFF",
+  },
+  feedbackContainer: {
     marginTop: 8,
   },
-  correctAnswerText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#2ECC71",
+  alertBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 24,
   },
-  resultText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#2ECC71",
-    textAlign: "center",
+  alertWrong: {
+    backgroundColor: "#FFD5D5",
   },
-  resultTextWrong: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#E74C3C",
-    textAlign: "center",
+  alertCorrect: {
+    backgroundColor: "#E8F5E9", // Not specified so use light green
+  },
+  alertIcon: {
+    marginRight: 5,
+  },
+  alertTextContent: {
+    flex: 1,
+  },
+  alertTitle: {
+    fontFamily: "Lexend_700Bold",
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  alertSubtitle: {
+    fontFamily: "Lexend_400Regular",
+    fontSize: 14,
+  },
+  navButtonsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 16,
+  },
+  prevButton: {
+    flex: 0.45,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    height: 56,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+    backgroundColor: "#FFFFFF",
+  },
+  prevButtonText: {
+    fontFamily: "Lexend_700Bold",
+    fontSize: 16,
+    color: "#94A3B8",
+    marginLeft: 4,
+  },
+  nextButton: {
+    flex: 0.52,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    height: 56,
+    borderRadius: 20,
+    backgroundColor: "#55BA5D",
+  },
+  nextButtonText: {
+    fontFamily: "Lexend_700Bold",
+    fontSize: 16,
+    color: "#FFFFFF",
+    marginRight: 4,
   },
 });
