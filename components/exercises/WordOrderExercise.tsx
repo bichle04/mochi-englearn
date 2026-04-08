@@ -187,9 +187,9 @@ export const WordOrderExercise: React.FC<WordOrderProps> = ({
           <TouchableOpacity
             style={[
               styles.checkButton,
-              userAnswer.length > 0 ? styles.checkButtonActive : styles.checkButtonInactive,
+              userAnswer.length === (exercise.options?.length || 0) ? styles.checkButtonActive : styles.checkButtonInactive,
             ]}
-            disabled={userAnswer.length === 0}
+            disabled={userAnswer.length !== (exercise.options?.length || 0)}
             onPress={onCheck}
           >
             <Text style={styles.checkButtonText}>Check Answer</Text>
