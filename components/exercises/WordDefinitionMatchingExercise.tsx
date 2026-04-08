@@ -1,510 +1,479 @@
 import { Exercise } from "@/types/lesson";
 import * as Speech from "expo-speech";
-import { Link, Volume2 } from "lucide-react-native";
-import React, { useState } from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Link, Volume2, Smile, X as XIcon, ChevronLeft, ChevronRight, MoveRight } from "lucide-react-native";
+import React, { useState, useEffect } from "react";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface WordDefinitionMatchingProps {
   exercise: Exercise;
   showAnswer: boolean;
-  onAnswerChange?: (matches: { [wordIndex: number]: number }) => void;
+  matches: { [wordIndex: number]: number };
+  setMatches: (m: { [wordIndex: number]: number }) => void;
+  onCheck?: () => void;
+  onNext?: () => void;
+  onPrev?: () => void;
 }
 
-interface MatchingPair {
-  word: string;
-  definition: string;
-  pronunciation?: string;
-}
-
-// Color pairs for matching visualization
-const MATCH_COLORS = [
-  { border: "#FF6B9D", background: "rgba(255, 107, 157, 0.1)" },
-  { border: "#2ECC71", background: "rgba(46, 204, 113, 0.1)" },
-  { border: "#9B59B6", background: "rgba(155, 89, 182, 0.1)" },
-  { border: "#F39C12", background: "rgba(243, 156, 18, 0.1)" },
-];
+const MATCH_COLORS = ["#F472B6", "#55BA5D", "#0185E8", "#FF6B81"];
 
 export const WordDefinitionMatchingExercise: React.FC<WordDefinitionMatchingProps> = ({
   exercise,
   showAnswer,
-  onAnswerChange,
+  matches,
+  setMatches,
+  onCheck,
+  onNext,
+  onPrev,
 }) => {
-  // State for tracking matches: { wordOriginalIndex: shuffledDefinitionIndex }
-  const [matches, setMatches] = useState<{ [wordIndex: number]: number }>({});
   const [selectedWord, setSelectedWord] = useState<number | null>(null);
   const [selectedDefinition, setSelectedDefinition] = useState<number | null>(null);
-
-  // Use matchingPairs from exercise data
+  
   const matchingPairs = exercise.matchingPairs || [];
-
-  // Kiểm tra nếu không có đủ dữ liệu
-  if (!matchingPairs || matchingPairs.length < 4) {
-    return (
-      <View style={styles.exerciseContainer}>
-        <Text style={styles.errorText}>Không đủ dữ liệu để hiển thị bài tập.</Text>
-      </View>
-    );
-  }
-
-  // Shuffle definitions for the right column
-  // Store the definition text and its original index
-  const [shuffledDefinitions] = useState(() => {
+  
+  const [shuffledDefinitions, setShuffledDefinitions] = useState<{definition: string, originalIndex: number}[]>(() => {
     const definitions = matchingPairs.map((pair, index) => ({
       definition: pair.definition,
-      originalIndex: index, // This is the original index of the definition in matchingPairs
+      originalIndex: index,
     }));
     return definitions.sort(() => Math.random() - 0.5);
   });
 
+  if (!matchingPairs || matchingPairs.length < 4) return null;
+
   const handleWordPress = (wordIndex: number) => {
     if (showAnswer) return;
 
-    // If the word is already selected, unselect it and remove its match
     if (selectedWord === wordIndex) {
-      const newMatches = { ...matches };
+      setSelectedWord(null);
+      return;
+    }
+
+    let newMatches = { ...matches };
+    if (newMatches[wordIndex] !== undefined) {
       delete newMatches[wordIndex];
       setMatches(newMatches);
-      onAnswerChange?.(newMatches);
-      setSelectedWord(null);
-    } else {
-      setSelectedWord(wordIndex);
-      // If a definition is already selected, create a match immediately
-      if (selectedDefinition !== null) {
-        createMatch(wordIndex, selectedDefinition);
-      }
     }
-  };
 
-  const handleDefinitionPress = (shuffledDefinitionIndex: number) => {
-    if (showAnswer) return;
-
-    // If the definition is already selected, unselect it and remove its match
-    if (selectedDefinition === shuffledDefinitionIndex) {
-      const newMatches = { ...matches };
-      // Find the word that was matched with this shuffledDefinitionIndex
-      const wordToUnmatch = Object.keys(newMatches).find(
-        (key) => newMatches[parseInt(key)] === shuffledDefinitionIndex
-      );
-      if (wordToUnmatch !== undefined) {
-        delete newMatches[parseInt(wordToUnmatch)];
-        setMatches(newMatches);
-        onAnswerChange?.(newMatches);
-      }
+    if (selectedDefinition !== null) {
+      Object.keys(newMatches).forEach((key) => {
+        if (newMatches[parseInt(key)] === selectedDefinition) {
+          delete newMatches[parseInt(key)];
+        }
+      });
+      newMatches[wordIndex] = selectedDefinition;
+      setMatches(newMatches);
+      setSelectedWord(null);
       setSelectedDefinition(null);
     } else {
-      setSelectedDefinition(shuffledDefinitionIndex);
-      // If a word is already selected, create a match immediately
-      if (selectedWord !== null) {
-        createMatch(selectedWord, shuffledDefinitionIndex);
-      }
+      setSelectedWord(wordIndex);
     }
   };
 
-  const createMatch = (wordIndex: number, shuffledDefinitionIndex: number) => {
-    const newMatches = { ...matches };
+  const handleDefinitionPress = (defIndex: number) => {
+    if (showAnswer) return;
 
-    // Remove any existing match for the selected word
-    delete newMatches[wordIndex];
+    if (selectedDefinition === defIndex) {
+      setSelectedDefinition(null);
+      return;
+    }
 
-    // Remove any existing match for the selected definition (from another word)
-    Object.keys(newMatches).forEach((key) => {
-      if (newMatches[parseInt(key)] === shuffledDefinitionIndex) {
-        delete newMatches[parseInt(key)];
-      }
-    });
+    let newMatches = { ...matches };
+    const matchedWord = Object.keys(newMatches).find(
+      (k) => newMatches[parseInt(k)] === defIndex
+    );
+    if (matchedWord !== undefined) {
+      delete newMatches[parseInt(matchedWord)];
+      setMatches(newMatches);
+    }
 
-    // Create the new match: { originalWordIndex: shuffledDefinitionIndex }
-    newMatches[wordIndex] = shuffledDefinitionIndex;
-
-    setMatches(newMatches);
-    setSelectedWord(null);
-    setSelectedDefinition(null);
-
-    onAnswerChange?.(newMatches);
+    if (selectedWord !== null) {
+      delete newMatches[selectedWord];
+      newMatches[selectedWord] = defIndex;
+      setMatches(newMatches);
+      setSelectedWord(null);
+      setSelectedDefinition(null);
+    } else {
+      setSelectedDefinition(defIndex);
+    }
   };
 
-  const getMatchColor = (itemIndex: number, isWord: boolean): any => {
-    if (isWord) {
-      // Check if this word has a match
-      if (matches[itemIndex] !== undefined) {
-        const colorIndex = itemIndex % MATCH_COLORS.length;
-        return MATCH_COLORS[colorIndex];
-      }
-    } else {
-      // Check if this definition (at shuffled index) has a word matched to it
-      const matchedWordIndex = Object.keys(matches).find(
-        (wordIdx) => matches[parseInt(wordIdx)] === itemIndex
-      );
-      if (matchedWordIndex !== undefined) {
-        const colorIndex = parseInt(matchedWordIndex) % MATCH_COLORS.length;
-        return MATCH_COLORS[colorIndex];
-      }
+  const getWordColor = (index: number) => {
+    if (matches[index] !== undefined) {
+      return MATCH_COLORS[index % MATCH_COLORS.length];
+    }
+    if (selectedWord === index) {
+      return MATCH_COLORS[index % MATCH_COLORS.length];
     }
     return null;
   };
 
-  const isSelected = (wordIndex?: number, definitionIndex?: number): boolean => {
-    if (wordIndex !== undefined) {
-      return selectedWord === wordIndex;
+  const getDefColor = (index: number) => {
+    const matchedWordIndex = Object.keys(matches).find(
+      (wordIdx) => matches[parseInt(wordIdx)] === index
+    );
+    if (matchedWordIndex !== undefined) {
+      return MATCH_COLORS[parseInt(matchedWordIndex) % MATCH_COLORS.length];
     }
-    if (definitionIndex !== undefined) {
-      return selectedDefinition === definitionIndex;
+    if (selectedDefinition === index) {
+      return "#0185E8";
     }
-    return false;
+    return null;
   };
 
-  const checkAnswers = (): boolean => {
+  const checkAllCorrect = (): boolean => {
     if (Object.keys(matches).length !== matchingPairs.length) {
-      return false; // Not all pairs are matched
+      return false;
     }
     return Object.keys(matches).every((wordIndexStr) => {
       const wordIndex = parseInt(wordIndexStr);
       const shuffledDefIndex = matches[wordIndex];
-      // Get the original index of the definition from the shuffled array
       const originalDefIndex = shuffledDefinitions[shuffledDefIndex].originalIndex;
-      // Check if the original index of the word matches the original index of the definition
       return originalDefIndex === wordIndex;
     });
   };
 
-  const playPronunciation = (word: string) => {
-    Speech.stop();
-    Speech.speak(word, {
-      language: "en",
-      pitch: 1,
-      rate: 1,
-    });
-  };
+  const isAllCorrect = checkAllCorrect();
+  const pairsMatchedCount = Object.keys(matches).length;
+  const isComplete = pairsMatchedCount === matchingPairs.length;
 
   return (
-    <ScrollView style={styles.exerciseContainer} showsVerticalScrollIndicator={false}>
-      <View style={styles.questionCard}>
-        <View style={styles.exerciseHeader}>
-          <Link size={24} color="#3498DB" />
-          <Text style={styles.exerciseTitle}>Match words with definitions</Text>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <View style={styles.card}>
+        <View style={styles.header}>
+          <Link size={20} color="#0185E8" />
+          <Text style={styles.title}>Match words with definitions</Text>
         </View>
 
-        <Text style={styles.instructionText}>
-          Tap a word on the left, then tap its matching definition on the right.
-          Matched pairs will have the same colored border.
-        </Text>
+        <View style={styles.titlesRow}>
+          <Text style={styles.columnTitle}>Words</Text>
+          <Text style={styles.columnTitle}>Definitions</Text>
+        </View>
 
-        <View style={styles.matchingContainer}>
-          {/* Words Column */}
-          <View style={styles.wordsColumn}>
-            <Text style={styles.columnTitle}>Words</Text>
+        <View style={styles.columnsContainer}>
+          <View style={styles.column}>
             {matchingPairs.map((pair, index) => {
-              const matchColor = getMatchColor(index, true); // Pass true for isWord
-              const selected = isSelected(index);
-
+              const color = getWordColor(index);
               return (
                 <TouchableOpacity
-                  key={`word-${index}`}
-                  style={[
-                    styles.wordCard,
-                    matchColor && {
-                      borderColor: matchColor.border,
-                      backgroundColor: matchColor.background,
-                    },
-                    selected && styles.selectedCard,
-                  ]}
+                  key={`w-${index}`}
+                  style={[styles.box, color ? { borderColor: color, borderWidth: 2 } : {}]}
                   onPress={() => handleWordPress(index)}
+                  activeOpacity={0.7}
                   disabled={showAnswer}
                 >
-                  <View style={styles.wordContent}>
-                    <Text
-                      style={[
-                        styles.wordText,
-                        matchColor && { color: matchColor.border },
-                      ]}
-                    >
-                      {pair.word}
-                    </Text>
-                    {pair.pronunciation && (
-                      <Text style={styles.pronunciationText}>
-                        {pair.pronunciation}
-                      </Text>
-                    )}
-                  </View>
+                  <Text style={[styles.wordText, color ? { color } : {}]}>{pair.word}</Text>
+                  {pair.pronunciation && (
+                    <Text style={[styles.pronText, color ? { color } : {}]}>{pair.pronunciation}</Text>
+                  )}
                   <TouchableOpacity
-                    style={styles.audioButton}
-                    onPress={() => playPronunciation(pair.word)}
+                    onPress={() => Speech.speak(pair.word, { language: "en" })}
+                    style={{ marginTop: 6 }}
                   >
-                    <Volume2 size={16} color="#7F8C8D" />
+                    <Volume2 size={16} color={color || "#94A3B8"} />
                   </TouchableOpacity>
                 </TouchableOpacity>
               );
             })}
           </View>
-
-          {/* Definitions Column */}
-          <View style={styles.definitionsColumn}>
-            <Text style={styles.columnTitle}>Definitions</Text>
+          <View style={{ width: 14 }} />
+          <View style={styles.column}>
             {shuffledDefinitions.map((item, index) => {
-              const matchColor = getMatchColor(index, false); // Pass false for isWord
-              const selected = isSelected(undefined, index);
-
+              const color = getDefColor(index);
               return (
                 <TouchableOpacity
-                  key={`definition-${index}`}
-                  style={[
-                    styles.definitionCard,
-                    matchColor && {
-                      borderColor: matchColor.border,
-                      backgroundColor: matchColor.background,
-                    },
-                    selected && styles.selectedCard,
-                  ]}
+                  key={`d-${index}`}
+                  style={[styles.box, color ? { borderColor: color, borderWidth: 2 } : {}]}
                   onPress={() => handleDefinitionPress(index)}
+                  activeOpacity={0.7}
                   disabled={showAnswer}
                 >
-                  <Text
-                    style={[
-                      styles.definitionText,
-                      matchColor && { color: matchColor.border },
-                    ]}
-                  >
-                    {item.definition}
-                  </Text>
+                  <Text style={[styles.defText, color ? { color } : {}]}>{item.definition}</Text>
                 </TouchableOpacity>
               );
             })}
           </View>
         </View>
 
-        {showAnswer && (
-          <View style={styles.answerReveal}>
-            <Text style={styles.resultText}>
-              {checkAnswers() ? "🎉 Perfect! All matches are correct!" : "❌ Some matches are incorrect"}
-            </Text>
-            <Text style={styles.correctAnswerLabel}>Correct matches:</Text>
-            {matchingPairs.map((pair, index) => (
-              <View key={`correct-${index}`} style={styles.correctMatchRow}>
-                <Text style={styles.correctWord}>{pair.word}</Text>
-                <Text style={styles.matchArrow}>→</Text>
-                <Text style={styles.correctDefinition}>{pair.definition}</Text>
+        <Text style={styles.matchedCount}>
+          Matched: {pairsMatchedCount} / {matchingPairs.length}
+        </Text>
+
+        {showAnswer ? (
+          <View style={styles.feedbackContainer}>
+            {isAllCorrect ? (
+              <View style={styles.alertBoxCorrect}>
+                <View style={styles.alertHeaderRow}>
+                  <Smile size={28} color="#55BA5D" style={{ marginRight: 6 }} />
+                  <Text style={styles.alertTitleCorrect}>Tuyệt vời!</Text>
+                </View>
+                <Text style={[styles.alertSubtitle, { color: "#55BA5D", textAlign: "center" }]}>
+                  Bạn đã nối đúng toàn bộ
+                </Text>
               </View>
-            ))}
+            ) : (
+              <View style={styles.alertBoxWrong}>
+                <View style={styles.alertHeaderRow}>
+                  <XIcon size={24} color="#E53935" strokeWidth={4} style={{  marginTop: 1 }} />
+                  <Text style={styles.alertTitleWrong}>Có một vài câu bạn nối chưa đúng</Text>
+                </View>
+                <Text style={styles.alertSubtitle}>Đáp án đúng</Text>
+                
+                <View style={styles.correctionTable}>
+                  {matchingPairs.map((pair, index) => (
+                    <View key={index} style={styles.correctionRow}>
+                      <Text style={styles.correctionWord}>{pair.word}</Text>
+                      <View style={styles.correctionArrowContainer}>
+                        <MoveRight size={18} color="#1E293B" strokeWidth={3} />
+                      </View>
+                      <Text style={styles.correctionDef}>{pair.definition}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            <View style={styles.navButtonsRow}>
+              <TouchableOpacity style={styles.prevButton} onPress={onPrev}>
+                <ChevronLeft size={20} color="#55BA5D" />
+                <Text style={styles.prevButtonText}>Trước</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.nextButton} onPress={onNext}>
+                <Text style={styles.nextButtonText}>Tiếp theo</Text>
+                <ChevronRight size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
           </View>
+        ) : (
+          <TouchableOpacity
+            style={[styles.checkButton, isComplete ? styles.checkButtonActive : styles.checkButtonInactive]}
+            disabled={!isComplete}
+            onPress={onCheck}
+          >
+            <Text style={[styles.checkButtonText, !isComplete && { color: "#FFFFFF" }]}>Check Answer</Text>
+          </TouchableOpacity>
         )}
-
-        {/* Progress indicator */}
-        <View style={styles.progressContainer}>
-          <Text style={styles.progressText}>
-            Matched: {Object.keys(matches).length} / {matchingPairs.length}
-          </Text>
-        </View>
-
-        {/* Mochi & Michi encouragement */}
-        <View style={styles.mascotEncouragement}>
-          <Text style={styles.encouragementMascot}>🍡🐱</Text>
-          <Text style={styles.encouragementText}>
-            {Object.keys(matches).length === 0
-              ? "Mochi & Michi are ready to help you match! Start by selecting a word!"
-              : Object.keys(matches).length === matchingPairs.length
-              ? "Amazing work! You've matched all the pairs! 🎉"
-              : `Great progress! ${matchingPairs.length - Object.keys(matches).length} more to go!`}
-          </Text>
-        </View>
       </View>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  exerciseContainer: {
+  container: {
     flex: 1,
   },
-  questionCard: {
+  card: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    padding: 20,
-    margin: 20,
-    minHeight: 600,
-    elevation: 8,
-    shadowColor: "#000",
+    borderRadius: 28,
+    paddingHorizontal: 24,
+    paddingTop: 32,
+    paddingBottom: 24,
+    shadowColor: "#64748B",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 1,
+    borderWidth: 1,
+    borderColor: "#F8FAFC",
+    marginBottom: 60,
+    marginHorizontal: 4,
   },
-  exerciseHeader: {
+  header: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 32,
   },
-  exerciseTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#2C3E50",
-    marginLeft: 12,
-  },
-  instructionText: {
+  title: {
+    fontFamily: "Lexend_700Bold",
     fontSize: 16,
-    color: "#7F8C8D",
-    textAlign: "center",
-    marginBottom: 25,
-    lineHeight: 22,
+    color: "#1E293B",
+    marginLeft: 8,
   },
-  matchingContainer: {
+  titlesRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  wordsColumn: {
-    flex: 1,
-    marginRight: 10,
-  },
-  definitionsColumn: {
-    flex: 1,
-    marginLeft: 10,
+    justifyContent: "space-around",
+    marginBottom: 16,
   },
   columnTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#2C3E50",
-    textAlign: "center",
-    marginBottom: 15,
-    paddingBottom: 8,
-    borderBottomWidth: 2,
-    borderBottomColor: "#E8E6E8",
+    fontFamily: "Lexend_700Bold",
+    fontSize: 15,
+    color: "#1E293B",
   },
-  wordCard: {
-    backgroundColor: "#F8F9FA",
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 10,
-    borderWidth: 2,
-    borderColor: "#E8E6E8",
-    flexDirection: "column",
-    alignItems: "center",
+  columnsContainer: {
+    flexDirection: "row",
     justifyContent: "space-between",
-    minHeight: 70,
+    marginBottom: 24,
   },
-  definitionCard: {
-    backgroundColor: "#F8F9FA",
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 10,
-    borderWidth: 2,
-    borderColor: "#E8E6E8",
-    minHeight: 70,
-    justifyContent: "center",
-  },
-  selectedCard: {
-    borderColor: "#3498DB",
-    backgroundColor: "rgba(52, 152, 219, 0.1)",
-    elevation: 4,
-    shadowColor: "#3498DB",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-  },
-  wordContent: {
+  column: {
     flex: 1,
   },
+  box: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "#94A3B8",
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+    minHeight: 110,
+  },
   wordText: {
-    fontSize: 13,
-    fontWeight: "bold",
-    color: "#2C3E50",
-    marginBottom: 2,
+    fontFamily: "Lexend_700Bold",
+    fontSize: 15,
+    color: "#1E293B",
+    textAlign: "center",
   },
-  pronunciationText: {
+  pronText: {
+    fontFamily: "Lexend_400Regular",
     fontSize: 12,
-    color: "#7F8C8D",
-    fontStyle: "italic",
+    color: "#94A3B8",
+    marginTop: 2,
+    textAlign: "center",
   },
-  definitionText: {
-    fontSize: 13,
-    color: "#2C3E50",
-    lineHeight: 18,
+  defText: {
+    fontFamily: "Lexend_500Medium",
+    fontSize: 12,
+    color: "#1E293B",
+    textAlign: "center",
+    lineHeight: 16,
   },
-  audioButton: {
-    padding: 5,
-    borderRadius: 8,
-    backgroundColor: "rgba(127, 140, 141, 0.1)",
-    marginTop: 5,
+  matchedCount: {
+    fontFamily: "Lexend_700Bold",
+    fontSize: 14,
+    color: "#64748B",
+    textAlign: "center",
+    marginBottom: 32,
   },
-  answerReveal: {
-    marginTop: 20,
-    padding: 16,
-    backgroundColor: "#F0F8F0",
-    borderRadius: 12,
+  checkButton: {
+    height: 60,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  checkButtonActive: {
+    backgroundColor: "#55BA5D",
+  },
+  checkButtonInactive: {
+    backgroundColor: "#BDC3C7",
+  },
+  checkButtonText: {
+    fontFamily: "Lexend_700Bold",
+    fontSize: 16,
+    color: "#FFFFFF",
+  },
+  feedbackContainer: {
+    marginTop: 8,
+  },
+  alertBoxWrong: {
+    backgroundColor: "#FCE4E4",
+    borderRadius: 20,
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+    marginBottom: 24,
     alignItems: "center",
   },
-  resultText: {
-    fontSize: 18,
-    fontWeight: "600",
-    textAlign: "center",
-    marginBottom: 12,
+  alertBoxCorrect: {
+    backgroundColor: "#D5FFD9",
+    borderRadius: 20,
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+    marginBottom: 24,
+    alignItems: "center",
   },
-  correctAnswerLabel: {
+  alertHeaderRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "center",
+  },
+  alertTitleWrong: {
+    fontFamily: "Lexend_700Bold",
     fontSize: 16,
-    color: "#7F8C8D",
-    marginBottom: 12,
-    fontWeight: "600",
+    color: "#1E293B",
+    textAlign: "center",
+    flexShrink: 1,
   },
-  correctMatchRow: {
+  alertTitleCorrect: {
+    fontFamily: "Lexend_700Bold",
+    fontSize: 16,
+    color: "#55BA5D",
+    textAlign: "center",
+  },
+  alertSubtitle: {
+    fontFamily: "Lexend_700Bold",
+    fontSize: 15,
+    color: "#1E293B",
+    marginTop: 16,
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  correctionTable: {
+    width: "100%",
+    alignItems: "center",
+  },
+  correctionRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "center",
+    marginBottom: 16,
+    width: "100%",
+  },
+  correctionWord: {
+    width: "38%",
+    textAlign: "right",
+    fontFamily: "Lexend_600SemiBold",
+    fontSize: 14,
+    color: "#813232",
+    lineHeight: 20,
+  },
+  correctionArrowContainer: {
+    width: 32,
+    alignItems: "center",
+    paddingTop: 1,
+  },
+  correctionDef: {
+    width: "48%",
+    textAlign: "left",
+    fontFamily: "Lexend_600SemiBold",
+    fontSize: 14,
+    color: "#813232",
+    lineHeight: 20,
+  },
+  navButtonsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 16,
+  },
+  prevButton: {
+    flex: 0.45,
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
-    paddingHorizontal: 6,
+    justifyContent: "center",
+    height: 56,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: "#55BA5D",
+    backgroundColor: "#FFFFFF",
   },
-  correctWord: {
-    fontSize: 13,
-    fontWeight: "bold",
-    color: "#2ECC71",
-    flex: 1.3,
-    textAlign: "right",
-  },
-  matchArrow: {
+  prevButtonText: {
+    fontFamily: "Lexend_700Bold",
     fontSize: 16,
-    color: "#7F8C8D",
-    marginHorizontal: 12,
+    color: "#55BA5D",
+    marginLeft: 4,
   },
-  correctDefinition: {
-    fontSize: 13,
-    color: "#2ECC71",
-    flex: 1.7,
-  },
-  progressContainer: {
+  nextButton: {
+    flex: 0.52,
+    flexDirection: "row",
     alignItems: "center",
-    marginTop: 15,
-    paddingTop: 15,
-    borderTopWidth: 1,
-    borderTopColor: "#E8E6E8",
+    justifyContent: "center",
+    height: 56,
+    borderRadius: 20,
+    backgroundColor: "#55BA5D",
   },
-  progressText: {
-    fontSize: 14,
-    color: "#7F8C8D",
-    fontWeight: "600",
-  },
-  mascotEncouragement: {
-    alignItems: "center",
-    marginTop: 20,
-    backgroundColor: "#F8F9FA",
-    borderRadius: 12,
-    padding: 16,
-  },
-  encouragementMascot: {
-    fontSize: 30,
-    marginBottom: 8,
-  },
-  encouragementText: {
-    fontSize: 14,
-    color: "#7F8C8D",
-    textAlign: "center",
-    lineHeight: 18,
-  },
-  errorText: {
+  nextButtonText: {
+    fontFamily: "Lexend_700Bold",
     fontSize: 16,
-    color: "#E74C3C",
-    textAlign: "center",
-    margin: 20,
+    color: "#FFFFFF",
+    marginRight: 4,
   },
 });

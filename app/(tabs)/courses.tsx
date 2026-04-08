@@ -1,178 +1,216 @@
-import GlobalLoading from "@/components/GlobalLoading";
-import { useCourse } from "@/contexts/CourseContext";
-import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
-import { BookOpen, Star, Users } from "lucide-react-native";
+import React from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
   View,
-  SafeAreaView,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
   StatusBar,
+  ImageBackground,
+  Platform,
 } from "react-native";
+import { router } from "expo-router";
+import { Flame, Bell, Search } from "lucide-react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
-export default function CoursesScreen() {
-  const { courses, loading, error } = useCourse();
-
-  const navigateToLesson = (courseId: number) => {
-    router.push(`/lesson/${courseId}`);
+export default function ExploreScreen() {
+  const handleSearchPress = () => {
+    router.push("/search");
   };
 
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case "Beginner":
-        return "#2ECC71";
-      case "Intermediate":
-        return "#F39C12";
-      case "Advanced":
-        return "#9B59B6";
-      case "Expert":
-        return "#E74C3C";
-      default:
-        return "#7F8C8D";
-    }
-  };
-
-  if (loading) {
-    return <GlobalLoading />;
-  }
-
-  if (error) {
-    return (
-      <View
-        style={[
-          styles.container,
-          { justifyContent: "center", alignItems: "center" },
-        ]}
-      >
-        <Text style={styles.errorText}>Error loading courses: {error}</Text>
-      </View>
-    );
-  }
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <LinearGradient
-          colors={["#9B59B6", "#8E44AD"] as const}
-          style={styles.header}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+      
+      {/* Header */}
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerTitle}>Khám phá</Text>
+        <View style={styles.headerIcons}>
+          <View style={styles.flameContainer}>
+            <Flame size={20} color="#EA580C" fill="#EA580C" />
+            <Text style={styles.flameText}>5</Text>
+          </View>
+          <TouchableOpacity>
+            <Bell size={24} color="#55BA5D" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Search Bar (Static, acts as a button) */}
+      <TouchableOpacity
+        style={styles.searchBar}
+        activeOpacity={0.8}
+        onPress={handleSearchPress}
+      >
+        <Search size={20} color="#A0AEC0" />
+        <Text style={styles.searchText}>Tìm kiếm chủ đề, từ vựng ...</Text>
+      </TouchableOpacity>
+
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Dành cho bạn Section */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Dành cho bạn</Text>
+          <TouchableOpacity>
+            <Text style={styles.seeAllText}>Xem tất cả</Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.horizontalList}
         >
-          <View style={styles.headerContent}>
-            <View>
-              <Text style={styles.headerTitle}>Course Library</Text>
-              <Text style={styles.headerSubtitle}>
-                Choose your learning path with Michi! 🐱
-              </Text>
+          {/* Card 1 */}
+          <TouchableOpacity 
+            style={styles.largeCard} 
+            activeOpacity={0.9}
+            onPress={() => router.push('/course/business')}
+          >
+            <View style={styles.largeCardImageContainer}>
+              <Image
+                source={require("../../assets/images/explore/business.png")}
+                style={styles.largeCardImage}
+              />
+              <LinearGradient
+                colors={["transparent", "rgba(0, 0, 0, 0.5)"]}
+                locations={[0.4, 1]}
+                style={styles.largeCardGradient}
+              />
+              <View style={[styles.tagBadge, { backgroundColor: "#93C5FD" }]}>
+                <Text style={styles.tagText}>Kinh doanh</Text>
+              </View>
             </View>
-            <View style={styles.mascotContainer}>
-              <Text style={styles.mascot}>📚</Text>
+            <View style={styles.largeCardContent}>
+              <Text style={styles.largeCardTitle}>Từ vựng về kinh doanh</Text>
+              <Text style={styles.largeCardSubtitle}>24 Bài học</Text>
+              <View style={styles.progressBarContainer}>
+                <View
+                  style={[
+                    styles.progressBar,
+                    { width: "60%", backgroundColor: "#AFCFF6" },
+                  ]}
+                />
+              </View>
             </View>
-          </View>
-        </LinearGradient>
+          </TouchableOpacity>
 
-        {/* Popular Courses Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Star size={20} color="#FF6B9D" />
-            <Text style={styles.sectionTitle}>Popular Courses</Text>
-          </View>
+          {/* Card 2 */}
+          <TouchableOpacity style={styles.largeCard} activeOpacity={0.9}>
+            <View style={styles.largeCardImageContainer}>
+              <Image
+                source={require("../../assets/images/explore/travel.png")}
+                style={styles.largeCardImage}
+              />
+              <LinearGradient
+                colors={["transparent", "rgba(0, 0, 0, 0.5)"]}
+                locations={[0.4, 1]}
+                style={styles.largeCardGradient}
+              />
+              <View style={[styles.tagBadge, { backgroundColor: "#FDBA74" }]}>
+                <Text style={styles.tagText}>Du lịch</Text>
+              </View>
+            </View>
+            <View style={styles.largeCardContent}>
+              <Text style={styles.largeCardTitle}>Từ vựng về du lịch</Text>
+              <Text style={styles.largeCardSubtitle}>18 Bài học</Text>
+              <View style={styles.progressBarContainer}>
+                <View
+                  style={[
+                    styles.progressBar,
+                    { width: "30%", backgroundColor: "#FECB7C" },
+                  ]}
+                />
+              </View>
+            </View>
+          </TouchableOpacity>
+        </ScrollView>
 
-          {courses.map(course => (
-            <TouchableOpacity
-              key={course.id}
-              style={styles.courseCard}
-              onPress={() => navigateToLesson(course.id)}
+        {/* Chủ đề nổi bật Section */}
+        <View style={[styles.sectionHeader, { marginTop: 24 }]}>
+          <Text style={styles.sectionTitle}>Chủ đề nổi bật</Text>
+          <TouchableOpacity>
+            <Text style={styles.seeAllText}>Xem tất cả</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.highlightGrid}>
+          {/* Highlight Item 1 */}
+          <TouchableOpacity style={styles.highlightCard} activeOpacity={0.9}>
+            <ImageBackground
+              source={require("../../assets/images/explore/writing.png")}
+              style={styles.highlightImage}
+              imageStyle={{ borderRadius: 20 }}
             >
               <LinearGradient
-                colors={[course.color_start, course.color_end]}
-                style={styles.courseGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
+                colors={["transparent", "rgba(0, 0, 0, 0.6)"]}
+                locations={[0.3, 1]}
+                style={styles.highlightOverlay}
               >
-                <View style={styles.courseContent}>
-                  <View style={styles.courseHeader}>
-                    <View style={styles.courseIconContainer}>
-                      <Text style={styles.courseIcon}>{course.icon}</Text>
-                    </View>
-                    <View style={styles.courseInfo}>
-                      <Text style={styles.courseTitle}>{course.title}</Text>
-                      <Text style={styles.courseSubtitle}>
-                        {course.subtitle || course.description}
-                      </Text>
-                    </View>
-                    <View style={styles.courseMeta}>
-                      <View
-                        style={[
-                          styles.levelBadge,
-                          { backgroundColor: getLevelColor(course.level) },
-                        ]}
-                      >
-                        <Text style={styles.levelText}>{course.level}</Text>
-                      </View>
-                    </View>
-                  </View>
-
-                  <View style={styles.courseStats}>
-                    <View style={styles.statItem}>
-                      <BookOpen size={16} color="#FFFFFF" />
-                      <Text style={styles.statText}>
-                        {course.total_words} words
-                      </Text>
-                    </View>
-                    <View style={styles.statItem}>
-                      <Users size={16} color="#FFFFFF" />
-                      <Text style={styles.statText}>
-                        {course.estimated_time}min
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.progressSection}>
-                    <View style={styles.progressHeader}>
-                      <Text style={styles.progressLabel}>Category</Text>
-                      <Text style={styles.progressPercent}>
-                        {course.category}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
+                <Text style={styles.highlightTitle}>Viết học thuật</Text>
+                <Text style={styles.highlightSubtitle}>12 Bài học</Text>
               </LinearGradient>
-            </TouchableOpacity>
-          ))}
+            </ImageBackground>
+          </TouchableOpacity>
+
+          {/* Highlight Item 2 */}
+          <TouchableOpacity style={styles.highlightCard} activeOpacity={0.9}>
+            <ImageBackground
+              source={require("../../assets/images/explore/presentation.png")}
+              style={styles.highlightImage}
+              imageStyle={{ borderRadius: 20 }}
+            >
+              <LinearGradient
+                colors={["transparent", "rgba(0, 0, 0, 0.6)"]}
+                locations={[0.3, 1]}
+                style={styles.highlightOverlay}
+              >
+                <Text style={styles.highlightTitle}>Thuyết trình</Text>
+                <Text style={styles.highlightSubtitle}>8 Bài học</Text>
+              </LinearGradient>
+            </ImageBackground>
+          </TouchableOpacity>
+
+          {/* Highlight Item 3 */}
+          <TouchableOpacity style={styles.highlightCard} activeOpacity={0.9}>
+            <ImageBackground
+              source={require("../../assets/images/explore/communication.png")}
+              style={styles.highlightImage}
+              imageStyle={{ borderRadius: 20 }}
+            >
+              <LinearGradient
+                colors={["transparent", "rgba(0, 0, 0, 0.6)"]}
+                locations={[0.3, 1]}
+                style={styles.highlightOverlay}
+              >
+                <Text style={styles.highlightTitle}>Giao tiếp hàng ngày</Text>
+                <Text style={styles.highlightSubtitle}>15 Bài học</Text>
+              </LinearGradient>
+            </ImageBackground>
+          </TouchableOpacity>
+
+          {/* Highlight Item 4 */}
+          <TouchableOpacity style={styles.highlightCard} activeOpacity={0.9}>
+            <ImageBackground
+              source={require("../../assets/images/explore/art.png")}
+              style={styles.highlightImage}
+              imageStyle={{ borderRadius: 20 }}
+            >
+              <LinearGradient
+                colors={["transparent", "rgba(0, 0, 0, 0.6)"]}
+                locations={[0.3, 1]}
+                style={styles.highlightOverlay}
+              >
+                <Text style={styles.highlightTitle}>Nghệ thuật</Text>
+                <Text style={styles.highlightSubtitle}>10 Bài học</Text>
+              </LinearGradient>
+            </ImageBackground>
+          </TouchableOpacity>
         </View>
-
-        {/* Coming Soon Section */}
-        <View style={styles.section}>
-          <Text style={{ ...styles.sectionTitle, marginBottom: 8 }}>
-            Coming Soon 🚀
-          </Text>
-          <View style={styles.comingSoonCard}>
-            <Text style={styles.comingSoonIcon}>🎯</Text>
-            <View style={styles.comingSoonContent}>
-              <Text style={styles.comingSoonTitle}>TOEFL Preparation</Text>
-              <Text style={styles.comingSoonSubtitle}>
-                Complete TOEFL vocabulary course with speaking practice
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.comingSoonCard}>
-            <Text style={styles.comingSoonIcon}>🌍</Text>
-            <View style={styles.comingSoonContent}>
-              <Text style={styles.comingSoonTitle}>Travel English</Text>
-              <Text style={styles.comingSoonSubtitle}>
-                Essential phrases for travelers and tourists
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.bottomPadding} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -181,196 +219,189 @@ export default function CoursesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: "#FAFAFA",
   },
   scrollView: {
     flex: 1,
   },
-  header: {
-    paddingTop: 15,
-    paddingBottom: 30,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+  scrollContent: {
+    paddingBottom: 40,
   },
-  headerContent: {
+  headerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    paddingHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 20,
   },
   headerTitle: {
-    fontSize: 24,
-    color: "#FFFFFF",
-    fontWeight: "bold",
+    fontFamily: "Lexend_700Bold",
+    fontSize: 26,
+    color: "#0F172A",
   },
-  headerSubtitle: {
-    fontSize: 14,
-    color: "#FFFFFF",
-    opacity: 0.9,
-    marginTop: 4,
+  headerIcons: {
+    flexDirection: "row",
+    alignItems: "center",
   },
-  mascotContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    borderRadius: 25,
-    padding: 10,
+  flameContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 16,
   },
-  mascot: {
-    fontSize: 30,
+  flameText: {
+    fontFamily: "Lexend_700Bold",
+    fontSize: 16,
+    color: "#EA580C",
+    marginLeft: 4,
   },
-  section: {
-    paddingHorizontal: 20,
-    marginTop: 25,
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    marginHorizontal: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+    marginBottom: 24,
+  },
+  searchText: {
+    fontFamily: "Lexend_400Regular",
+    fontSize: 15,
+    color: "#9CA3AF",
+    marginLeft: 12,
   },
   sectionHeader: {
     flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 15,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#2C3E50",
-    marginLeft: 8,
-  },
-  courseCard: {
-    borderRadius: 16,
-    marginBottom: 16,
-    overflow: "hidden",
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-  },
-  courseGradient: {
-    padding: 20,
-  },
-  courseContent: {
-    flex: 1,
-  },
-  courseHeader: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 16,
-  },
-  courseIconContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    borderRadius: 12,
-    padding: 8,
-    marginRight: 12,
-  },
-  courseIcon: {
-    fontSize: 24,
-  },
-  courseInfo: {
-    flex: 1,
-  },
-  courseTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-    marginBottom: 4,
-  },
-  courseSubtitle: {
-    fontSize: 14,
-    color: "#FFFFFF",
-    opacity: 0.9,
-  },
-  courseMeta: {
-    alignItems: "flex-end",
-  },
-  levelBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  levelText: {
-    fontSize: 12,
-    color: "#FFFFFF",
-    fontWeight: "600",
-  },
-  courseStats: {
-    flexDirection: "row",
-    marginBottom: 16,
-  },
-  statItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 20,
-  },
-  statText: {
-    fontSize: 14,
-    color: "#FFFFFF",
-    marginLeft: 6,
-    opacity: 0.9,
-  },
-  progressSection: {
-    marginTop: 8,
-  },
-  progressHeader: {
-    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
+    paddingHorizontal: 20,
+    marginBottom: 16,
   },
-  progressLabel: {
-    fontSize: 14,
-    color: "#FFFFFF",
-    opacity: 0.9,
+  sectionTitle: {
+    fontFamily: "Lexend_700Bold",
+    fontSize: 20,
+    color: "#0F172A",
   },
-  progressPercent: {
+  seeAllText: {
+    fontFamily: "Lexend_600SemiBold",
     fontSize: 14,
+    color: "#55BA5D",
+  },
+  horizontalList: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+  },
+  largeCard: {
+    width: 260,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    marginHorizontal: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+    overflow: "hidden",
+  },
+  largeCardImageContainer: {
+    width: "100%",
+    height: 140,
+    position: "relative",
+  },
+  largeCardImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  largeCardGradient: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: "50%",
+  },
+  tagBadge: {
+    position: "absolute",
+    bottom: 12,
+    left: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  tagText: {
+    fontFamily: "Lexend_600SemiBold",
+    fontSize: 12,
     color: "#FFFFFF",
-    fontWeight: "600",
+  },
+  largeCardContent: {
+    padding: 16,
+  },
+  largeCardTitle: {
+    fontFamily: "Lexend_700Bold",
+    fontSize: 16,
+    color: "#0F172A",
+    marginBottom: 4,
+  },
+  largeCardSubtitle: {
+    fontFamily: "Lexend_400Regular",
+    fontSize: 13,
+    color: "#64748B",
+    marginBottom: 16,
   },
   progressBarContainer: {
+    width: "100%",
     height: 6,
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    backgroundColor: "#E2E8F0",
     borderRadius: 3,
-    overflow: "hidden",
   },
   progressBar: {
     height: "100%",
-    backgroundColor: "#FFFFFF",
     borderRadius: 3,
   },
-  comingSoonCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    padding: 16,
+  highlightGrid: {
     flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-    elevation: 2,
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+  },
+  highlightCard: {
+    width: "48%",
+    aspectRatio: 1.2,
+    borderRadius: 20,
+    marginBottom: 16,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  comingSoonIcon: {
-    fontSize: 30,
-    marginRight: 16,
+  highlightImage: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "flex-end",
   },
-  comingSoonContent: {
+  highlightOverlay: {
+    padding: 12,
     flex: 1,
+    justifyContent: "flex-end",
+    borderRadius: 20,
   },
-  comingSoonTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#2C3E50",
-    marginBottom: 4,
-  },
-  comingSoonSubtitle: {
+  highlightTitle: {
+    fontFamily: "Lexend_700Bold",
     fontSize: 14,
-    color: "#7F8C8D",
-    lineHeight: 18,
+    color: "#FFFFFF",
+    marginBottom: 2,
   },
-  bottomPadding: {
-    height: 30,
-  },
-  errorText: {
-    fontSize: 18,
-    color: "#E74C3C",
-    textAlign: "center",
+  highlightSubtitle: {
+    fontFamily: "Lexend_400Regular",
+    fontSize: 11,
+    color: "#E2E8F0",
   },
 });
+
