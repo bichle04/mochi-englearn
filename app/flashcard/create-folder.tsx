@@ -19,7 +19,10 @@ export default function CreateFolderScreen() {
     if (folderName.trim()) {
       router.push({
         pathname: "/flashcard/[folderId]" as any,
-        params: { folderId: folderName.trim() }
+        params: { 
+          folderId: folderName.trim(),
+          isEmpty: 'true'
+        }
       });
     }
   };

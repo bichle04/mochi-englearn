@@ -36,7 +36,7 @@ const STUDY_MODULES_METADATA = [
 ];
 
 export default function FolderDetailScreen() {
-  const { folderId, addedCount, selectedIdsStr } = useLocalSearchParams<{ folderId: string, addedCount?: string, selectedIdsStr?: string }>();
+  const { folderId, addedCount, selectedIdsStr, isEmpty } = useLocalSearchParams<{ folderId: string, addedCount?: string, selectedIdsStr?: string, isEmpty?: string }>();
   const folderName = typeof folderId === 'string' ? folderId : 'Thư mục mới';
   
   const [showToast, setShowToast] = useState(false);
@@ -44,9 +44,9 @@ export default function FolderDetailScreen() {
   const [searchText, setSearchText] = useState('');
 
   // Extract selected modules
-  const selectedModules = selectedIdsStr 
-    ? STUDY_MODULES_METADATA.filter(m => selectedIdsStr.split(',').includes(m.id))
-    : STUDY_MODULES_METADATA.slice(1, 4); // Default to some modules if no selectedIds passed
+  const selectedModules = (selectedIdsStr || isEmpty === 'true')
+    ? (selectedIdsStr ? STUDY_MODULES_METADATA.filter(m => selectedIdsStr.split(',').includes(m.id)) : [])
+    : STUDY_MODULES_METADATA.slice(1, 4); // Default only for existing demo folders
 
   useEffect(() => {
     if (addedCount) {
@@ -61,7 +61,7 @@ export default function FolderDetailScreen() {
   }, [addedCount]);
 
   const handleClose = () => {
-    router.back();
+    router.replace('/flashcard/');
   };
 
   const handleSelectItem = () => {
@@ -153,13 +153,9 @@ export default function FolderDetailScreen() {
             
             <Text style={styles.emptyStateText}>Bắt đầu xây dựng thư mục của bạn</Text>
             
-            <FlashcardButton 
-              title="Thêm tài liệu học" 
-              onPress={handleSelectItem} 
-              size="small"
-              style={styles.addButton}
-              textStyle={styles.addButtonText}
-            />
+            <TouchableOpacity style={styles.emptyAddBtn} onPress={handleSelectItem}>
+              <Text style={styles.emptyAddBtnText}>Thêm tài liệu học</Text>
+            </TouchableOpacity>
           </View>
         )}
       </ScrollView>
@@ -343,6 +339,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     padding: 30,
     alignItems: 'center',
+    marginTop: 30,
   },
   illustration: {
     width: 200,
@@ -356,14 +353,21 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
   },
-  addButton: {
+  emptyAddBtn: {
     backgroundColor: '#55BA5D',
-    borderRadius: 25,
     paddingHorizontal: 25,
+    paddingVertical: 12,
+    borderRadius: 25,
+    shadowColor: '#55BA5D',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  addButtonText: {
+  emptyAddBtnText: {
     fontFamily: 'WorkSans_600SemiBold',
     fontSize: 14,
+    color: '#FFFFFF',
   },
   toastContainer: {
     position: 'absolute',
@@ -401,6 +405,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#55BA5D',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
   },
   studyAllButtonText: {
     fontFamily: 'WorkSans_700Bold',
@@ -408,3 +417,4 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 });
+
