@@ -254,14 +254,6 @@ export default function SpeakingRoom() {
           setIsScoring(true);
           setScoringStatus('analyzing');
           
-          /* 
-            ========================================================================
-            [START: BACKEND_INTEGRATION]
-            Sau này khi bạn đã sẵn sàng xử lý API thật, hãy BỎ COMMENT đoạn code dưới đây 
-            và XÓA phần MOCK_LOGIC bên dưới.
-            ========================================================================
-          */
-          /*
           const feedback = await speakingService.submitSpeakingAudio(newPath, questionsForAPI);
           setApiFeedback(feedback);
 
@@ -278,70 +270,6 @@ export default function SpeakingRoom() {
 
           setIsScoring(false);
           return feedback;
-          */
-          // [END: BACKEND_INTEGRATION]
-
-          /* 
-            ========================================================================
-            [START: MOCK_LOGIC] - Phần giả lập kết quả để phục vụ test UI
-            Sau này hãy xóa khối code này khi bạn đã mở comment phần API thật ở trên.
-            ========================================================================
-          */
-          await new Promise(resolve => setTimeout(resolve, 1500)); // Giả lập thời gian xử lý AI
-          
-          const mockFeedback = {
-            overall_score: 6.0,
-            transcript: "This is a simulated transcript for your IELTS speaking session.",
-            details: {
-              fluency: {
-                score: 6.0,
-                evaluation: [
-                  { criteria: "Steady Pace", description: "The speaker maintains a steady pace and is able to convey the main message clearly." },
-                  { criteria: "Coherence", description: "The speech lacks variety in sentence structure and complexity." }
-                ],
-                errors: [
-                  { original: "this is the example how I can use this recorder", suggested: "this is an example of how I can use this recorder", explanation: "The phrase 'this is the example how' is awkward." }
-                ],
-                feedback: "The speaker demonstrates a basic level of fluency and coherence.",
-                wpm: 116.96
-              },
-              pronunciation: {
-                score: 6.0,
-                evaluation: [{ criteria: "Intonation", description: "Generally clear but needs more precision." }],
-                errors: [],
-                feedback: "Practice word stress to enhance pronunciation clarity."
-              },
-              grammar: {
-                score: 6.0,
-                evaluation: [{ criteria: "Range", description: "Uses a wider range of sentence structures." }],
-                errors: [
-                  { original: "I has a dog since two years", suggested: "I have had a dog for two years", explanation: "Use the present perfect 'have had'." }
-                ],
-                feedback: "Focus on improving complex sentence formation."
-              },
-              vocabulary: {
-                score: 5.0,
-                evaluation: [{ criteria: "Lexical Range", description: "Show a wider range of vocabulary." }],
-                errors: [],
-                feedback: "Work on using more academic or complex vocabulary."
-              }
-            },
-            general_suggestions: [
-              "Work on using a wider range of sentence structures to improve coherence.",
-              "Practice word stress to enhance pronunciation clarity."
-            ]
-          };
-
-          setApiFeedback(mockFeedback);
-
-          if (isFinal) {
-            setScoringStatus('success');
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }
-
-          setIsScoring(false);
-          return mockFeedback;
-          // [END: MOCK_LOGIC]
 
         } catch (apiError) {
           setIsScoring(false);

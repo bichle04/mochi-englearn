@@ -57,12 +57,18 @@ export default function RootLayout() {
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="lesson/[id]" options={{ headerShown: false }} />
+            <Stack.Screen name="flashcard/create-folder" options={{ headerShown: false, presentation: 'transparentModal' }} />
+            <Stack.Screen name="flashcard/[folderId]" options={{ headerShown: false }} />
+            <Stack.Screen name="flashcard/select-module" options={{ headerShown: false, presentation: 'transparentModal' }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="speaking" options={{ headerShown: false }} />
             <Stack.Screen name="statistics" options={{ headerShown: false }} />
             <Stack.Screen name="statistic/history" options={{ headerShown: false }} />
             <Stack.Screen name="statistic/vocabulary" options={{ headerShown: false }} />
             <Stack.Screen name="statistic/achievements" options={{ headerShown: false }} />
+            <Stack.Screen name="listening/index" options={{ headerShown: false }} />
+            <Stack.Screen name="listening/part-detail" options={{ headerShown: false }} />
+            <Stack.Screen name="listening/lessons" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
             <Stack.Screen name="loading" options={{ headerShown: false }} />
           </Stack>
