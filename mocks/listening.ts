@@ -259,8 +259,6 @@ export const lessonsMock: ListeningLesson[] = [
     id: "p3-l2",
     partId: "part3",
     title: "Dissertation Planning",
-    level: "Hard", // Error here, should be level
-    // Wait, let's fix the level type
     level: "Advanced",
     questions: 10,
     iconName: "document",
