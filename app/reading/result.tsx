@@ -20,7 +20,7 @@ export default function Result() {
     const correctAns = CORRECT_MAP[id];
     const userAns = parsedAnswers[id] || "No Answer";
     const isCorrect = userAns.trim().toLowerCase() === correctAns.toLowerCase();
-    
+
     return { id, isCorrect, userAns, correctAns };
   });
 
@@ -62,7 +62,7 @@ export default function Result() {
     <SafeAreaView style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      
+
       {/* Fixed Top Nav */}
       <View style={styles.headerNav}>
         <View style={{ width: 40 }} />
@@ -80,18 +80,18 @@ export default function Result() {
         }
       ]}>
         <Animated.View style={[
-           styles.topScoreCard,
-           { transform: [{ scale: headerContainerScale }] }
+          styles.topScoreCard,
+          { transform: [{ scale: headerContainerScale }] }
         ]}>
           <Text style={styles.testCompletedTitle}>TEST COMPLETED</Text>
-          
+
           <View style={styles.circleOuter}>
             <View style={styles.circleInner}>
-               <Text style={styles.bandScoreNumber}>{bandScoreFmt}</Text>
-               <Text style={styles.bandScoreLabel}>Band Score</Text>
+              <Text style={styles.bandScoreNumber}>{bandScoreFmt}</Text>
+              <Text style={styles.bandScoreLabel}>Band Score</Text>
             </View>
           </View>
-          
+
           <View style={styles.statsRow}>
             <View style={styles.statBlock}>
               <Text style={styles.statValue}>{correctCount}/10</Text>
@@ -103,18 +103,18 @@ export default function Result() {
             </View>
           </View>
         </Animated.View>
-        
+
         {/* The filter row is inside the solid white container so it sticks cleanly */}
         <View style={styles.listHeaderRow}>
-           <Text style={styles.listHeaderTitle}>Question Review</Text>
-           <TouchableOpacity onPress={handleFilterPress}>
-              <SlidersHorizontal color="#545454" size={20} />
-           </TouchableOpacity>
+          <Text style={styles.listHeaderTitle}>Question Review</Text>
+          <TouchableOpacity onPress={handleFilterPress}>
+            <SlidersHorizontal color="#545454" size={20} />
+          </TouchableOpacity>
         </View>
       </Animated.View>
 
       {/* Scrollable Content */}
-      <Animated.ScrollView 
+      <Animated.ScrollView
         contentContainerStyle={{ paddingTop: 380, paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
@@ -125,57 +125,47 @@ export default function Result() {
       >
         {filteredResults.map((item) => {
           const isCorrect = item.isCorrect;
+          const accentColor = isCorrect ? "#2E7D32" : "#C62828";
           return (
             <View key={item.id} style={styles.resultItem}>
-              {/* Left Curve */}
-              <View style={[
-                styles.curveLine, 
-                isCorrect ? { borderColor: "#2E7D32" } : { borderColor: "#C62828" }
-              ]} />
+              {/* C-Shape Bracket Background */}
+              <View style={[styles.curveBackground, { borderColor: accentColor }]} />
 
-              {/* Item Header */}
-              <View style={styles.itemHeader}>
+              {/* Main Content inside the bracket */}
+              <View style={styles.topRow}>
                 <View style={[
-                  styles.numBadge, 
-                  isCorrect ? { backgroundColor: "#E8F5E9" } : { backgroundColor: "#FFF0ED" }
+                  styles.numBadge,
+                  { backgroundColor: isCorrect ? "#F0F4EC" : "#FFF0ED" }
                 ]}>
-                  <Text style={[
-                    styles.numText, 
-                    isCorrect ? { color: "#2E7D32" } : { color: "#C62828" }
-                  ]}>
+                  <Text style={[styles.numText, { color: accentColor }]}>
                     {item.id.toString().padStart(2, "0")}
                   </Text>
                 </View>
-                <TouchableOpacity onPress={() => router.push({
-                   pathname: "/reading/explanation",
-                   params: { 
-                     qId: item.id, 
-                     userAns: item.userAns, 
-                     correctAns: item.correctAns 
-                   }
-                } as any)}>
-                  <Text style={styles.viewExplText}>VIEW EXPLANATION</Text>
+                <TouchableOpacity
+                  onPress={() => router.push({
+                    pathname: "/reading/explanation",
+                    params: {
+                      qId: item.id,
+                      userAns: item.userAns,
+                      correctAns: item.correctAns
+                    }
+                  } as any)}>
+                  <Text style={[styles.viewExplText, { color: "#4CAF50" }]}>VIEW EXPLANATION</Text>
                 </TouchableOpacity>
               </View>
 
-              {/* Blocks Row */}
               <View style={styles.blocksRow}>
-                {/* Your Answer Row */}
                 <View style={[
-                  styles.ansBlock, 
-                  isCorrect ? { backgroundColor: "#F9FAFB" } : { backgroundColor: "#FFF4F2" }
+                  styles.ansBlock,
+                  isCorrect ? { backgroundColor: "#FAFAFA" } : { backgroundColor: "#FFF5F4" }
                 ]}>
-                  <Text style={[
-                    styles.ansLabel, 
-                    isCorrect ? { color: "#6B7280" } : { color: "#C62828" }
-                  ]}>
+                  <Text style={[styles.ansLabel, { color: isCorrect ? "#6B7280" : "#C62828" }]}>
                     Your Answer
                   </Text>
                   <Text style={styles.ansValue} numberOfLines={1}>{item.userAns}</Text>
                 </View>
 
-                {/* Correct Answer Row */}
-                <View style={[styles.ansBlock, { backgroundColor: "#F1F8EE" }]}>
+                <View style={[styles.ansBlock, { backgroundColor: "#F3F8F2" }]}>
                   <Text style={[styles.ansLabel, { color: "#2E7D32" }]}>
                     Correct Answer
                   </Text>
@@ -189,16 +179,16 @@ export default function Result() {
 
       {/* Fixed Bottom Bar */}
       <View style={styles.bottomBar}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.returnButton}
           onPress={() => {
             MOCK_GLOBAL_STATE.passage1Completed = true; // Mark as resolved globally
             // Attempt to pop Result & Detail straight back to List cleanly without duplicating history
             const nav = navigation as any;
             if (nav.pop) {
-               nav.pop(2);
+              nav.pop(2);
             } else {
-               router.replace("/reading/list" as any);
+              router.replace("/reading/list" as any);
             }
           }}
         >
@@ -235,7 +225,7 @@ const styles = StyleSheet.create({
     top: 110, // Dropped safely below headerNav on all devices (including deep notches)
     left: 0,
     right: 0,
-    backgroundColor: "#FFFFFF", 
+    backgroundColor: "#FFFFFF",
     zIndex: 5,
     paddingHorizontal: 20,
     paddingTop: 10,
@@ -249,7 +239,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#4CAF50", 
+    borderColor: "#4CAF50",
   },
   testCompletedTitle: {
     fontFamily: "Nunito_800ExtraBold",
@@ -259,7 +249,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   circleOuter: {
-    backgroundColor: "#FFFFFF", 
+    backgroundColor: "#FFFFFF",
     width: 120,
     height: 120,
     borderRadius: 60,
@@ -322,65 +312,64 @@ const styles = StyleSheet.create({
     color: "#2C2E33",
   },
   resultItem: {
-    minHeight: 120,
-    marginBottom: 28,
-    paddingLeft: 30, 
-    paddingRight: 20,
     position: "relative",
+    marginBottom: 24,
+    marginHorizontal: 16,
+    paddingLeft: 44, // Pushed far to the right, heavily separating it from the left crescent border
+    paddingRight: 4,
+    paddingTop: 12, 
+    paddingBottom: 16,
   },
-  curveLine: {
+  curveBackground: {
     position: "absolute",
-    left: 20,
-    top: 8,
-    bottom: -8, 
-    width: 20,
-    borderTopLeftRadius: 24,
-    borderBottomLeftRadius: 24,
+    left: 0,
+    top: 4, // Offset slightly to align with the badge curve nicely
+    bottom: 4,
+    width: 16, // Very shallow width
     borderLeftWidth: 3,
     borderTopWidth: 1,
     borderBottomWidth: 1,
     borderRightWidth: 0,
-    opacity: 0.8,
+    borderTopLeftRadius: 40, // Large radius + thin width = extremely clean, truncated crescent curve
+    borderBottomLeftRadius: 40,
+    opacity: 0.9,
   },
-  itemHeader: {
+  topRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 12,
   },
   numBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 34,
+    height: 34,
+    borderRadius: 17, // Tighter circle badge like in the photo
     alignItems: "center",
     justifyContent: "center",
-    marginLeft: -10, 
-    backgroundColor: "#E8F5E9",
   },
   numText: {
     fontFamily: "Nunito_800ExtraBold",
-    fontSize: 13,
+    fontSize: 14,
   },
   viewExplText: {
     fontFamily: "Nunito_800ExtraBold",
     fontSize: 11,
-    color: "#4CAF50",
     letterSpacing: 0.5,
   },
   blocksRow: {
     flexDirection: "row",
-    gap: 12,
+    gap: 10,
   },
   ansBlock: {
     flex: 1,
-    borderRadius: 16,
+    borderRadius: 16, // Softer curves as in the photo
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
   ansLabel: {
-    fontFamily: "Nunito_800ExtraBold",
+    fontFamily: "WorkSans_600SemiBold",
     fontSize: 11,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   ansValue: {
     fontFamily: "Nunito_800ExtraBold",

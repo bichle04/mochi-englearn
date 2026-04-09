@@ -68,7 +68,7 @@ export default function DoingTest() {
 
       {/* Subheader */}
       <View style={styles.subheader}>
-        <Text style={styles.progressText}>Passage 1 - {answeredCount}/{QUESTIONS.length}</Text>
+        <Text style={styles.progressText}>Passage 1</Text>
         <View style={styles.timerPill}>
           <Clock color="#E8503A" size={14} strokeWidth={2.5} />
           <Text style={styles.timerText}>{formatTime(timeLeft)}</Text>
