@@ -59,6 +59,10 @@ export default function RootLayout() {
             <Stack.Screen name="lesson/[id]" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="speaking" options={{ headerShown: false }} />
+            <Stack.Screen name="statistics" options={{ headerShown: false }} />
+            <Stack.Screen name="statistic/history" options={{ headerShown: false }} />
+            <Stack.Screen name="statistic/vocabulary" options={{ headerShown: false }} />
+            <Stack.Screen name="statistic/achievements" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
             <Stack.Screen name="loading" options={{ headerShown: false }} />
           </Stack>
