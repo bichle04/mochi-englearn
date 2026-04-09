@@ -65,6 +65,10 @@ export default function RootLayout() {
             <Stack.Screen name="listening/index" options={{ headerShown: false }} />
             <Stack.Screen name="listening/part-detail" options={{ headerShown: false }} />
             <Stack.Screen name="listening/lessons" options={{ headerShown: false }} />
+            <Stack.Screen name="statistics" options={{ headerShown: false }} />
+            <Stack.Screen name="statistic/history" options={{ headerShown: false }} />
+            <Stack.Screen name="statistic/vocabulary" options={{ headerShown: false }} />
+            <Stack.Screen name="statistic/achievements" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
             <Stack.Screen name="loading" options={{ headerShown: false }} />
           </Stack>
