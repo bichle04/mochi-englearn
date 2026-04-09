@@ -64,7 +64,7 @@ export default function PersonalScreen() {
       title: "Thống kê",
       description: "Xem tiến độ học tập của bạn",
       icon: <ChartOutline size={24} color="#00BD50" />,
-      onPress: () => router.push("/(tabs)/stats"),
+      onPress: () => router.push("/statistics"),
     },
     {
       title: "Thay đổi mật khẩu",
