@@ -13,31 +13,17 @@ import {
 } from "react-native";
 
 const { width } = Dimensions.get("window");
-import { Bell } from "lucide-react-native";
+import MainHeader from "@/components/shared/MainHeader";
 import { router } from "expo-router";
-import { useUserStats } from "@/hooks/useUserStats";
 
 export default function IELTSPrepScreen() {
-  const { stats } = useUserStats();
-  const currentStreak = stats?.currentStreak || 5; // Fallback to 5 as in image
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
 
-      {/* Fixed Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Luyện IELTS</Text>
-        <View style={styles.headerRight}>
-          <View style={styles.streakContainer}>
-            <Text style={styles.streakIcon}>🔥</Text>
-            <Text style={styles.streakCount}>{currentStreak}</Text>
-          </View>
-          <TouchableOpacity style={styles.notificationBtn}>
-            <Bell size={24} color="#55BA5D" />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <MainHeader title="Luyện IELTS" />
+
 
       <ScrollView
         style={styles.scrollView}
@@ -119,45 +105,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: "#FFFFFF",
-    zIndex: 10,
-  },
-  headerTitle: {
-    fontFamily: "Lexend_700Bold",
-    fontSize: 28,
-    color: "#2E3A59",
-    letterSpacing: -0.5,
-  },
-  headerRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 15,
-  },
-  streakContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  streakIcon: {
-    fontSize: 20,
-  },
-  streakCount: {
-    fontFamily: "Lexend_700Bold",
-    fontSize: 20,
-    color: "#EA580C",
-  },
-  notificationBtn: {
-    padding: 2,
-  },
   scrollView: {
     flex: 1,
   },
+
   scrollContent: {
     paddingHorizontal: 20,
     paddingBottom: 40,

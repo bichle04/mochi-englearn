@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
+import { StatusBar } from 'expo-status-bar';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
   TextInput,
   ScrollView,
   Platform,
@@ -11,18 +12,17 @@ import {
   Image
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { 
-  Flame, 
+import {
   Search, 
   Grid, 
-  List as ListIcon, 
-  Plus, 
-  X, 
-  Folder, 
-  Image as ImageIcon, 
-  GraduationCap, 
-  MessagesSquare, 
-  Coffee, 
+  List as ListIcon,
+  Plus,
+  X,
+  Folder,
+  Image as ImageIcon,
+  GraduationCap,
+  MessagesSquare,
+  Coffee,
   FileText,
   ArrowRight,
   Trophy,
@@ -31,6 +31,7 @@ import {
   Briefcase
 } from 'lucide-react-native';
 import { router, useNavigation, Stack } from 'expo-router';
+import MainHeader from '@/components/shared/MainHeader';
 
 const { width } = Dimensions.get('window');
 
@@ -143,22 +144,16 @@ export default function NotebookScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      <StatusBar style="dark" />
       <Stack.Screen options={{ headerShown: false }} />
       {/* STICKY HEADER AREA */}
       <View style={styles.stickyArea}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Sổ Tay Của Tôi</Text>
-          <View style={styles.flameContainer}>
-            <Flame size={20} color="#EA580C" />
-            <Text style={styles.flameText}>5</Text>
-          </View>
-        </View>
+        <MainHeader title="Sổ tay của tôi" />
 
         {/* Search Bar */}
         <View style={styles.searchContainer}>
           <Search size={20} color="#94A3B8" />
-          <TextInput 
+          <TextInput
             style={styles.searchInput}
             placeholder="Tìm kiếm"
             placeholderTextColor="#6B7280"
@@ -168,25 +163,25 @@ export default function NotebookScreen() {
         {/* Tab Pills */}
         <View style={styles.tabsContainer}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsScrollContent}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.tabButton, activeTab === 'all' && styles.tabButtonActive]}
               onPress={() => setActiveTab('all')}
             >
               <Text style={activeTab === 'all' ? styles.tabButtonTextActive : styles.tabButtonText}>Tất cả</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.tabButton, activeTab === 'folder' && styles.tabButtonActive]}
               onPress={() => setActiveTab('folder')}
             >
               <Text style={activeTab === 'folder' ? styles.tabButtonTextActive : styles.tabButtonText}>Thư mục</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.tabButton, activeTab === 'module' && styles.tabButtonActive]}
               onPress={() => setActiveTab('module')}
             >
               <Text style={activeTab === 'module' ? styles.tabButtonTextActive : styles.tabButtonText}>Học phần</Text>
             </TouchableOpacity>
-            
+
             {/* View Toggle - only relevant if 'all' view is selected but we keep it for match UI */}
             {activeTab === 'all' && (
               <View style={styles.viewToggleGroup}>
@@ -204,7 +199,7 @@ export default function NotebookScreen() {
 
       {/* SCROLLABLE AREA */}
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        
+
         {activeTab === 'all' && (
           <>
             {/* Continue Learning Card */}
@@ -215,7 +210,7 @@ export default function NotebookScreen() {
                 </View>
                 <Text style={styles.continueTitle}>Tiếp Tục Học</Text>
                 <Text style={styles.continueSubtitle}>Thẻ "Giao tiếp cơ bản"</Text>
-                
+
                 <View style={styles.progressContainer}>
                   <View style={styles.progressHeader}>
                     <Text style={styles.nextWordText}>Từ tiếp theo: <Text style={styles.nextWordBold}>Sarcastic</Text></Text>
@@ -228,23 +223,23 @@ export default function NotebookScreen() {
 
                 <TouchableOpacity style={styles.continueButton}>
                   <Text style={styles.continueButtonText}>Tiếp tục ngay</Text>
-                  <ArrowRight size={16} color="#80BD91" style={{marginLeft: 4}} />
+                  <ArrowRight size={16} color="#80BD91" style={{ marginLeft: 4 }} />
                 </TouchableOpacity>
               </View>
               <View style={styles.continueCardRight}>
-                 <Image 
-                   source={require('../../assets/images/flashcard/image.png')} 
-                   style={styles.rightCardImage} 
-                   resizeMode="contain"
-                 />
+                <Image
+                  source={require('../../assets/images/flashcard/image.png')}
+                  style={styles.rightCardImage}
+                  resizeMode="contain"
+                />
               </View>
             </View>
 
             {/* Grid Items */}
             <View style={styles.gridContainer}>
               {GRID_ITEMS.map((item, idx) => (
-                <TouchableOpacity 
-                  key={idx} 
+                <TouchableOpacity
+                  key={idx}
                   style={styles.gridCard}
                   activeOpacity={0.8}
                   onPress={() => {
@@ -271,8 +266,8 @@ export default function NotebookScreen() {
           <View style={styles.listContainer}>
             {/* Sort/organize to somewhat match Image 1's display (IELTS, Giao tiếp, 1500, Giao tiếp cơ bản...) */}
             {[GRID_ITEMS[4], GRID_ITEMS[1], GRID_ITEMS[2], GRID_ITEMS[5], GRID_ITEMS[2], GRID_ITEMS[5]].map((item, idx) => (
-              <TouchableOpacity 
-                key={`module-${idx}`} 
+              <TouchableOpacity
+                key={`module-${idx}`}
                 style={styles.listItemCard}
                 activeOpacity={0.8}
                 onPress={() => {
@@ -297,8 +292,8 @@ export default function NotebookScreen() {
         {activeTab === 'folder' && (
           <View style={styles.listContainer}>
             {FOLDER_MOCK_DATA.map((folder, idx) => (
-              <TouchableOpacity 
-                key={`folder-${idx}`} 
+              <TouchableOpacity
+                key={`folder-${idx}`}
                 style={styles.listItemCard}
                 activeOpacity={0.8}
                 onPress={() => {
@@ -319,22 +314,22 @@ export default function NotebookScreen() {
             ))}
           </View>
         )}
-        
+
         {/* Bottom Padding for FAB */}
-        <View style={{height: 100}} />
+        <View style={{ height: 100 }} />
       </ScrollView>
 
       {/* FAB and Overlay Menu */}
       {showFABMenu && (
         <View style={styles.overlay}>
-          <TouchableOpacity 
-            style={styles.overlayTouchable} 
-            activeOpacity={1} 
+          <TouchableOpacity
+            style={styles.overlayTouchable}
+            activeOpacity={1}
             onPress={() => setShowFABMenu(false)}
           />
           <View style={styles.fabMenuContainer}>
             <View style={styles.fabMenuItem}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.fabMenuButton}
                 onPress={() => {
                   setShowFABMenu(false);
@@ -347,7 +342,7 @@ export default function NotebookScreen() {
             </View>
 
             <View style={styles.fabMenuItem}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.fabMenuButton}
                 onPress={() => {
                   setShowFABMenu(false);
@@ -363,7 +358,7 @@ export default function NotebookScreen() {
       )}
 
       {/* Main FAB */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={[styles.mainFab, showFABMenu ? styles.mainFabActive : {}]}
         onPress={() => setShowFABMenu(!showFABMenu)}
         activeOpacity={0.8}
@@ -374,7 +369,7 @@ export default function NotebookScreen() {
           <Plus size={28} color="#FFFFFF" />
         )}
       </TouchableOpacity>
-      
+
     </SafeAreaView>
   );
 }
@@ -385,31 +380,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
   },
   stickyArea: {
-    paddingHorizontal: 20,
     backgroundColor: '#F3F4F6',
     zIndex: 10,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: Platform.OS === 'ios' ? 20 : 35,
-    paddingBottom: 25,
-  },
-  headerTitle: {
-    fontFamily: 'Lexend_700Bold',
-    fontSize: 20,
-    color: '#111827',
-  },
-  flameContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  flameText: {
-    fontFamily: 'Lexend_700Bold',
-    fontSize: 16,
-    color: '#EA580C',
-    marginLeft: 4,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -417,6 +389,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 25,
     paddingHorizontal: 16,
+    marginHorizontal: 20, // Added to replace stickyArea padding
     height: 50,
     marginBottom: 25,
     shadowColor: '#000',
@@ -434,10 +407,11 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     marginBottom: 20,
+    paddingHorizontal: 20, // Added to replace stickyArea padding
   },
   tabsScrollContent: {
     alignItems: 'center',
-    paddingRight: 10,
+    paddingRight: 10, // Keep some extra space at the end
   },
   tabButton: {
     backgroundColor: '#FFFFFF',
