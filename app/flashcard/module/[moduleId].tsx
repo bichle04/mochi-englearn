@@ -18,8 +18,6 @@ import {
   MoreHorizontal, 
   Plus, 
   Coffee,
-  PenLine,
-  Trash2,
   Image as ImageIcon,
   GraduationCap,
   MessagesSquare,
@@ -29,30 +27,49 @@ import {
   Briefcase
 } from 'lucide-react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { FlashcardWordItem } from '../../../components/flashcard/FlashcardWordItem';
 
 const { width } = Dimensions.get('window');
 
 // Extended mockdata >= 30
-const INITIAL_MOCK_DATA = Array.from({ length: 35 }).map((_, index) => {
-  const words = [
-    { en: 'Cloud', vi: 'Mây' },
-    { en: 'Apple', vi: 'Quả táo' },
-    { en: 'Earth', vi: 'Trái đất' },
-    { en: 'Water', vi: 'Nước' },
-    { en: 'Fire', vi: 'Lửa' },
-    { en: 'Wind', vi: 'Gió' },
-    { en: 'Mountain', vi: 'Ngọn núi' },
-    { en: 'River', vi: 'Dòng sông' },
-    { en: 'Tree', vi: 'Cây' },
-    { en: 'Flower', vi: 'Hoa' }
-  ];
-  const word = words[index % words.length];
-  return {
-    id: `item-${index}`,
-    en: word.en,
-    vi: word.vi,
-  };
-});
+// Extended unique mockdata (35 items)
+const INITIAL_MOCK_DATA = [
+  { id: '1', en: 'Residence', vi: 'Chỗ ở', phonetic: '/ˈrezɪdəns/' },
+  { id: '2', en: 'Environment', vi: 'Môi trường', phonetic: '/ɪnˈvaɪrənmənt/' },
+  { id: '3', en: 'Education', vi: 'Giáo dục', phonetic: '/ˌedʒuˈkeɪʃn/' },
+  { id: '4', en: 'Technology', vi: 'Công nghệ', phonetic: '/tekˈnɑːlədʒi/' },
+  { id: '5', en: 'Dialogue', vi: 'Giao tiếp', phonetic: '/ˈdaɪəlɔːɡ/' },
+  { id: '6', en: 'Obligation', vi: 'Trách nhiệm', phonetic: '/ˌɑːblɪˈɡeɪʃn/' },
+  { id: '7', en: 'Experience', vi: 'Kinh nghiệm', phonetic: '/ɪkˈspɪriəns/' },
+  { id: '8', en: 'Development', vi: 'Sự phát triển', phonetic: '/dɪˈveləpmənt/' },
+  { id: '9', en: 'Relationship', vi: 'Mối quan hệ', phonetic: '/rɪˈleɪʃnʃɪp/' },
+  { id: '10', en: 'Opportunity', vi: 'Cơ hội', phonetic: '/ˌɑːpərˈtuːnəti/' },
+  { id: '11', en: 'Information', vi: 'Thông tin', phonetic: '/ˌɪnfərˈmeɪʃn/' },
+  { id: '12', en: 'Sustainable', vi: 'Bền vững', phonetic: '/səˈsteɪnəbl/' },
+  { id: '13', en: 'Individual', vi: 'Cá nhân', phonetic: '/ˌɪndɪˈvɪdʒuəl/' },
+  { id: '14', en: 'Worldwide', vi: 'Quốc tế', phonetic: '/ˌwɜːrldˈwaɪd/' },
+  { id: '15', en: 'Requirement', vi: 'Yêu cầu', phonetic: '/rɪˈkwaɪərmənt/' },
+  { id: '16', en: 'Solution', vi: 'Giải pháp', phonetic: '/səˈluːʃn/' },
+  { id: '17', en: 'Challenge', vi: 'Thử thách', phonetic: '/ˈtʃæləndʒ/' },
+  { id: '18', en: 'Decision', vi: 'Quyết định', phonetic: '/dɪˈsɪʒn/' },
+  { id: '19', en: 'Efficiency', vi: 'Hiệu quả', phonetic: '/ɪˈfɪʃnsi/' },
+  { id: '20', en: 'Improvement', vi: 'Sự cải thiện', phonetic: '/ɪmˈpruːvmənt/' },
+  { id: '21', en: 'Strategy', vi: 'Chiến lược', phonetic: '/ˈstrætədʒi/' },
+  { id: '22', en: 'Knowledge', vi: 'Kiến thức', phonetic: '/ˈnɑːlɪdʒ/' },
+  { id: '23', en: 'Analysis', vi: 'Phân tích', phonetic: '/əˈnæləsɪs/' },
+  { id: '24', en: 'Perspective', vi: 'Góc nhìn', phonetic: '/pərˈspektɪv/' },
+  { id: '25', en: 'Connection', vi: 'Sự kết nối', phonetic: '/kəˈnekʃn/' },
+  { id: '26', en: 'Organization', vi: 'Tổ chức', phonetic: '/ˌɔːrɡənəˈzeɪʃn/' },
+  { id: '27', en: 'Community', vi: 'Cộng đồng', phonetic: '/kəˈmjuːnəti/' },
+  { id: '28', en: 'Success', vi: 'Thành công', phonetic: '/səkˈses/' },
+  { id: '29', en: 'Productivity', vi: 'Năng suất', phonetic: '/ˌproʊdʌkˈtɪvəti/' },
+  { id: '30', en: 'Motivation', vi: 'Động lực', phonetic: '/ˌmoʊtɪˈveɪʃn/' },
+  { id: '31', en: 'Performance', vi: 'Hiệu suất', phonetic: '/pərˈfɔːrməns/' },
+  { id: '32', en: 'Innovation', vi: 'Sự đổi mới', phonetic: '/ˌɪnəˈveɪʃn/' },
+  { id: '33', en: 'Achievement', vi: 'Thành tích', phonetic: '/əˈtʃiːvmənt/' },
+  { id: '34', en: 'Potential', vi: 'Tiềm năng', phonetic: '/pəˈtenʃl/' },
+  { id: '35', en: 'Reliability', vi: 'Độ tin cậy', phonetic: '/rɪˌlaɪəˈbɪləti/' }
+];
 
 const MODULE_ICONS: Record<string, { Icon: any, color: string, bgColor: string }> = {
   'Tất cả': { Icon: ImageIcon, color: '#4CAF50', bgColor: '#F0FFF0' },
@@ -68,12 +85,35 @@ const MODULE_ICONS: Record<string, { Icon: any, color: string, bgColor: string }
 
 export default function ModuleDetailScreen() {
   const router = useRouter();
-  const { title = "1500 từ vựng phổ biến" } = useLocalSearchParams<{title: string}>();
+  const { title = "1500 từ vựng phổ biến", fromCreate, initialData, color, iconId } = useLocalSearchParams<{
+    title: string, 
+    fromCreate?: string, 
+    initialData?: string,
+    color?: string,
+    iconId?: string
+  }>();
   
   const iconConfig = MODULE_ICONS[title] || MODULE_ICONS['1500 từ vựng phổ biến'];
   const ModuleIcon = iconConfig.Icon;
 
-  const [words, setWords] = useState(INITIAL_MOCK_DATA);
+  // Initialize words with initialData if provided, otherwise fallback to MOCK
+  const [words, setWords] = useState(() => {
+    let data = INITIAL_MOCK_DATA;
+    if (initialData) {
+      try {
+        data = JSON.parse(initialData);
+      } catch (e) {
+        console.error("Failed to parse initialData", e);
+      }
+    }
+    
+    // Quick test: only 10 flashcards for "Giao tiếp hàng ngày"
+    if (title === "Giao tiếp hàng ngày") {
+      return data.slice(0, 10);
+    }
+    
+    return data;
+  });
   
   // Edit State
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -114,7 +154,16 @@ export default function ModuleDetailScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.iconButtonRound} onPress={() => router.back()}>
+        <TouchableOpacity 
+          style={styles.iconButtonRound} 
+          onPress={() => {
+            if (fromCreate === 'true') {
+              router.push('/(tabs)/flashcard');
+            } else {
+              router.back();
+            }
+          }}
+        >
           <X size={22} color="#111827" />
         </TouchableOpacity>
         <View style={styles.headerRightPill}>
@@ -138,20 +187,13 @@ export default function ModuleDetailScreen() {
       {/* List */}
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
         {words.map((item) => (
-          <View key={item.id} style={styles.wordCard}>
-            <View style={styles.wordTextContainer}>
-              <Text style={styles.wordEn}>{item.en}</Text>
-              <Text style={styles.wordVi}>{item.vi}</Text>
-            </View>
-            <View style={styles.actionContainer}>
-              <TouchableOpacity onPress={() => openEditModal(item)} style={styles.actionButton}>
-                <PenLine size={20} color="#9CA3AF" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => openDeleteModal(item)} style={styles.actionButton}>
-                <Trash2 size={20} color="#FE8080" />
-              </TouchableOpacity>
-            </View>
-          </View>
+          <FlashcardWordItem 
+            key={item.id}
+            en={item.en}
+            vi={item.vi}
+            onEdit={() => openEditModal(item)}
+            onDelete={() => openDeleteModal(item)}
+          />
         ))}
         {/* Bottom padding for floating button */}
         <View style={{height: 100}} />
@@ -160,7 +202,16 @@ export default function ModuleDetailScreen() {
       {/* Study All Button - Hide when any modal is visible so it won't peek through */}
       {(!editModalVisible && !deleteModalVisible) && (
         <View style={styles.bottomButtonContainer}>
-          <TouchableOpacity style={styles.studyAllButton}>
+          <TouchableOpacity 
+            style={styles.studyAllButton}
+            onPress={() => router.push({
+              pathname: `/flashcard/study/${title}`,
+              params: { 
+                title: title,
+                initialData: JSON.stringify(words)
+              }
+            })}
+          >
             <Text style={styles.studyAllText}>Học hết</Text>
           </TouchableOpacity>
         </View>
@@ -340,11 +391,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   studyAllButton: {
-    backgroundColor: '#34d399', // Based on image 1 green color
+    backgroundColor: '#55BA5D', 
     paddingVertical: 16,
     borderRadius: 25,
     alignItems: 'center',
-    shadowColor: '#34d399',
+    shadowColor: '#55BA5D',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -416,7 +467,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     width: '100%',
-    backgroundColor: '#34d399',
+    backgroundColor: '#55BA5D',
     paddingVertical: 16,
     borderRadius: 25,
     alignItems: 'center',
@@ -444,7 +495,7 @@ const styles = StyleSheet.create({
     color: '#4B5563',
   },
   deleteTargetTopic: {
-    color: '#34d399', // Green
+    color: '#55BA5D', // Green
     fontFamily: 'WorkSans_600SemiBold',
   },
   deleteConfirmButton: {
