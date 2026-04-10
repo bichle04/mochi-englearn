@@ -12,11 +12,13 @@ import {
 } from "@expo-google-fonts/nunito";
 import {
   WorkSans_400Regular,
+  WorkSans_500Medium,
   WorkSans_600SemiBold,
   WorkSans_700Bold,
 } from "@expo-google-fonts/work-sans";
 import {
   Lexend_400Regular,
+  Lexend_500Medium,
   Lexend_600SemiBold,
   Lexend_700Bold,
 } from "@expo-google-fonts/lexend";
@@ -37,9 +39,11 @@ export default function RootLayout() {
     Nunito_800ExtraBold,
     Nunito_900Black,
     WorkSans_400Regular,
+    WorkSans_500Medium,
     WorkSans_600SemiBold,
     WorkSans_700Bold,
     Lexend_400Regular,
+    Lexend_500Medium,
     Lexend_600SemiBold,
     Lexend_700Bold,
   });
@@ -58,7 +62,9 @@ export default function RootLayout() {
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="lesson/[id]" options={{ headerShown: false }} />
             <Stack.Screen name="flashcard/create-folder" options={{ headerShown: false, presentation: 'transparentModal' }} />
+            <Stack.Screen name="flashcard/create-module" options={{ headerShown: false, presentation: 'transparentModal' }} />
             <Stack.Screen name="flashcard/[folderId]" options={{ headerShown: false }} />
+            <Stack.Screen name="flashcard/study/[moduleId]" options={{ headerShown: false }} />
             <Stack.Screen name="flashcard/select-module" options={{ headerShown: false, presentation: 'transparentModal' }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="speaking" options={{ headerShown: false }} />

@@ -30,7 +30,7 @@ import {
   BookOpen,
   Briefcase
 } from 'lucide-react-native';
-import { router, useNavigation } from 'expo-router';
+import { router, useNavigation, Stack } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -46,7 +46,7 @@ const GRID_ITEMS = [
   },
   {
     title: 'Giao tiếp hàng ngày', // Removed \n for list format
-    subtitle: '20 flashcard',
+    subtitle: '10 flashcard',
     iconColor: '#FF9800',
     iconBgColor: '#FFF3E0',
     titleColor: '#374151',
@@ -143,6 +143,7 @@ export default function NotebookScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      <Stack.Screen options={{ headerShown: false }} />
       {/* STICKY HEADER AREA */}
       <View style={styles.stickyArea}>
         {/* Header */}
@@ -346,7 +347,13 @@ export default function NotebookScreen() {
             </View>
 
             <View style={styles.fabMenuItem}>
-              <TouchableOpacity style={styles.fabMenuButton}>
+              <TouchableOpacity 
+                style={styles.fabMenuButton}
+                onPress={() => {
+                  setShowFABMenu(false);
+                  router.push('/flashcard/create-module');
+                }}
+              >
                 <FileText size={24} color="#55B95D" fill="#55B95D" />
               </TouchableOpacity>
               <Text style={styles.fabMenuText}>Học phần</Text>
