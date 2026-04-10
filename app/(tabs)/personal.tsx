@@ -14,6 +14,8 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
+import MainHeader from "@/components/shared/MainHeader";
+
 import {
   UserLinear,
   ChartOutline,
@@ -84,10 +86,8 @@ export default function PersonalScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
 
-      {/* Header - Reusing IELTS Prep style structure */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Hồ sơ người dùng</Text>
-      </View>
+      <MainHeader title="Hồ sơ người dùng" />
+
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -173,21 +173,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: "#FFFFFF",
-    zIndex: 10,
-  },
-  headerTitle: {
-    fontFamily: "Lexend_700Bold",
-    fontSize: 28,
-    color: "#2E3A59",
-    letterSpacing: -0.5,
   },
   scrollContent: {
     paddingBottom: 40,

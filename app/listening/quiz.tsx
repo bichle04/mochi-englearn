@@ -27,14 +27,13 @@ const MOCK_QUESTIONS = [
   { id: 1, label: "GUEST NAME", placeholder: "Enter name" },
   { id: 2, label: "CHECK-IN DATE", placeholder: "Enter date" },
   { id: 3, label: "ROOM TYPE", placeholder: "Enter room type" },
-  { id: 4, label: "LENGTH OF STAY", placeholder: "3 Nights", isReadOnly: true },
-  { id: 5, label: "SPECIAL REQUESTS", placeholder: "Additional requirements..." },
-  { id: 6, label: "CONTACT PHONE NUMBER", placeholder: "Enter number" },
-  { id: 7, label: "NUMBER OF GUESTS", placeholder: "Enter number" },
-  { id: 8, label: "BREAKFAST OPTION", placeholder: "Additional requirements..." },
-  { id: 9, label: "ESTIMATED ARRIVAL TIME", placeholder: "Enter time" },
-  { id: 10, label: "PAYMENT METHOD", placeholder: "Enter method" },
-  { id: 11, label: "EMAIL ADDRESS", placeholder: "Enter email" },
+  { id: 4, label: "SPECIAL REQUESTS", placeholder: "Additional requirements..." },
+  { id: 5, label: "CONTACT PHONE NUMBER", placeholder: "Enter number" },
+  { id: 6, label: "NUMBER OF GUESTS", placeholder: "Enter number" },
+  { id: 7, label: "BREAKFAST OPTION", placeholder: "Additional requirements..." },
+  { id: 8, label: "ESTIMATED ARRIVAL TIME", placeholder: "Enter time" },
+  { id: 9, label: "PAYMENT METHOD", placeholder: "Enter method" },
+  { id: 10, label: "EMAIL ADDRESS", placeholder: "Enter email" },
 ];
 
 export default function ListeningQuizScreen() {
@@ -109,10 +108,10 @@ export default function ListeningQuizScreen() {
         { text: "Nhìn lại", style: "cancel" },
         { 
           text: "Nộp bài", 
-          onPress: () => {
-            // Simplified for now, just going back as per UI request
-            router.back();
-          } 
+          onPress: () => router.push({
+            pathname: "/listening/result",
+            params: { userAnswers: JSON.stringify(answers) }
+          } as any)
         }
       ]
     );
@@ -230,7 +229,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
-    paddingTop: Platform.OS === 'android' ? 30 : 0,
   },
   header: {
     flexDirection: "row",

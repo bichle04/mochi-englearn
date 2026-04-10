@@ -136,7 +136,13 @@ export default function SentenceQuizScreen() {
       "Bạn có chắc chắn muốn nộp bài không?",
       [
         { text: "Nhìn lại", style: "cancel" },
-        { text: "Nộp bài", onPress: () => router.back() }
+        { 
+          text: "Nộp bài", 
+          onPress: () => router.push({
+            pathname: "/listening/result",
+            params: { userAnswers: JSON.stringify(answers) }
+          } as any)
+        }
       ]
     );
   };
@@ -266,7 +272,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
-    paddingTop: Platform.OS === 'android' ? 30 : 0,
   },
   header: {
     flexDirection: "row",

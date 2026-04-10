@@ -7,6 +7,8 @@ import {
   CircleX,
   Clock,
   CreditCard as Edit3,
+  Flame,
+  Bell,
   Hash,
   Plus,
   Save,
@@ -1159,7 +1161,7 @@ export default function NotebookScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="dark-content" />
       <View style={{ flex: 1 }}>
       {isLoadingVocabs && (
         <View style={styles.loadingOverlay}>
@@ -1172,24 +1174,19 @@ export default function NotebookScreen() {
         style={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
       >
-        <LinearGradient
-          colors={["#9B59B6", "#8E44AD"]}
-          style={styles.header}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <View style={styles.headerContent}>
-            <View>
-              <Text style={styles.headerTitle}>My Vocabulary 📚</Text>
-              <Text style={styles.headerSubtitle}>
-                Your personal word collection & dictionary
-              </Text>
+        {/* Header (Matching Explore Screen) */}
+        <View style={styles.headerContainer}>
+          <Text style={styles.headerTitle}>Sổ tay</Text>
+          <View style={styles.headerIcons}>
+            <View style={styles.flameContainer}>
+              <Flame size={20} color="#EA580C" fill="#EA580C" />
+              <Text style={styles.flameText}>5</Text>
             </View>
-            <View style={styles.mascotContainer}>
-              <Text style={styles.mascot}>🍡</Text>
-            </View>
+            <TouchableOpacity>
+              <Bell size={24} color="#55BA5D" />
+            </TouchableOpacity>
           </View>
-        </LinearGradient>
+        </View>
         <View style={styles.searchSection}>
           <View style={styles.searchContainer}>
             <Search size={20} color="#7F8C8D" />
@@ -1640,36 +1637,33 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F8F9FA",
   },
-  header: {
-    paddingTop: 10,
-    paddingBottom: 30,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-  },
-  headerContent: {
+  headerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    paddingHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 20,
   },
   headerTitle: {
-    fontSize: 24,
-    color: "#FFFFFF",
-    fontWeight: "bold",
+    fontFamily: "Lexend_700Bold",
+    fontSize: 26,
+    color: "#0F172A",
   },
-  headerSubtitle: {
-    fontSize: 14,
-    color: "#FFFFFF",
-    opacity: 0.9,
-    marginTop: 4,
+  headerIcons: {
+    flexDirection: "row",
+    alignItems: "center",
   },
-  mascotContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    borderRadius: 25,
-    padding: 10,
+  flameContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 16,
   },
-  mascot: {
-    fontSize: 30,
+  flameText: {
+    fontFamily: "Lexend_700Bold",
+    fontSize: 16,
+    color: "#EA580C",
+    marginLeft: 4,
   },
   scrollContainer: {
     flex: 1,

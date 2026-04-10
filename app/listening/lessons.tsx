@@ -154,7 +154,17 @@ export default function ListeningLessonsScreen() {
                     <FileText size={18} color="#585C61" />
                     <Text style={styles.infoText}>{item.questions} questions</Text>
                   </View>
-                  <TouchableOpacity style={styles.startButton} activeOpacity={0.8}>
+                  <TouchableOpacity 
+                    style={styles.startButton} 
+                    activeOpacity={0.8}
+                    onPress={() => {
+                      if (item.id === "p1-l2") {
+                        router.push("/listening/sentence-quiz");
+                      } else {
+                        router.push("/listening/quiz");
+                      }
+                    }}
+                  >
                     <Text style={styles.startButtonText}>Start</Text>
                   </TouchableOpacity>
                 </View>

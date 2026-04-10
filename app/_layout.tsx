@@ -71,6 +71,10 @@ export default function RootLayout() {
             <Stack.Screen name="listening/index" options={{ headerShown: false }} />
             <Stack.Screen name="listening/part-detail" options={{ headerShown: false }} />
             <Stack.Screen name="listening/lessons" options={{ headerShown: false }} />
+            <Stack.Screen name="listening/quiz" options={{ headerShown: false }} />
+            <Stack.Screen name="listening/sentence-quiz" options={{ headerShown: false }} />
+            <Stack.Screen name="listening/result" options={{ headerShown: false }} />
+            <Stack.Screen name="listening/explanation" options={{ headerShown: false }} />
             <Stack.Screen name="statistics" options={{ headerShown: false }} />
             <Stack.Screen name="statistic/history" options={{ headerShown: false }} />
             <Stack.Screen name="statistic/vocabulary" options={{ headerShown: false }} />

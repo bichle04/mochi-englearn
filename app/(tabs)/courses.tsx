@@ -12,8 +12,9 @@ import {
   Platform,
 } from "react-native";
 import { router } from "expo-router";
-import { Flame, Bell, Search } from "lucide-react-native";
+import { Search } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import MainHeader from "@/components/shared/MainHeader";
 
 export default function ExploreScreen() {
   const handleSearchPress = () => {
@@ -23,19 +24,7 @@ export default function ExploreScreen() {
   return (
     <SafeAreaView style={styles.container}>
       
-      {/* Header */}
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Khám phá</Text>
-        <View style={styles.headerIcons}>
-          <View style={styles.flameContainer}>
-            <Flame size={20} color="#EA580C" fill="#EA580C" />
-            <Text style={styles.flameText}>5</Text>
-          </View>
-          <TouchableOpacity>
-            <Bell size={24} color="#55BA5D" />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <MainHeader title="Khám phá" />
 
       {/* Search Bar (Static, acts as a button) */}
       <TouchableOpacity
@@ -227,33 +216,8 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 40,
   },
-  headerContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    marginTop: 16,
-    marginBottom: 20,
-  },
-  headerTitle: {
-    fontFamily: "Lexend_700Bold",
-    fontSize: 26,
-    color: "#0F172A",
-  },
-  headerIcons: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  flameContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 16,
-  },
-  flameText: {
-    fontFamily: "Lexend_700Bold",
-    fontSize: 16,
-    color: "#EA580C",
-    marginLeft: 4,
+  scrollContent: {
+    paddingBottom: 40,
   },
   searchBar: {
     flexDirection: "row",
