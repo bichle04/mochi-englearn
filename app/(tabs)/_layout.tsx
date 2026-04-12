@@ -70,7 +70,7 @@ export default function TabLayout() {
         <Tabs.Screen name="change-pwd" options={{ href: null }} />
         <Tabs.Screen name="settings" options={{ href: null }} />
       </Tabs>
-      <ChatbotButton />
+      {/* <ChatbotButton /> */}
     </View>
   );
 }
