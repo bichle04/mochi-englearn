@@ -17,10 +17,13 @@ import {
   Trash2,
   Volume2,
   X,
+  ChevronRight,
+  ArrowLeft,
 } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
+  Image,
   Alert,
   Animated,
   Modal,
@@ -725,7 +728,14 @@ export default function NotebookScreen() {
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <Text style={styles.emptyMascot}>🍡🐱</Text>
+      {/* Mascot Image */}
+        <View style={styles.mascotContainer}>
+          <Image
+            source={require("../../assets/images/mascot/dictionary.png")}
+            style={styles.mascotImage}
+            resizeMode="contain"
+          />
+        </View>
       {!user ? (
         <>
           <Text style={styles.emptyTitle}>
@@ -738,10 +748,10 @@ export default function NotebookScreen() {
       ) : (
         <>
           <Text style={styles.emptyTitle}>
-            Search for any word and save it to your collection!
+            Tìm kiếm bất kỳ từ nào và lưu vào bộ sưu tập của bạn!
           </Text>
           <Text style={styles.emptySubtitle}>
-            Mochi & Michi are excited to help you build your vocabulary! ✨
+            Mochi rất hào hứng giúp bạn xây dựng vốn từ vựng! ✨
           </Text>
         </>
       )}
@@ -766,18 +776,18 @@ export default function NotebookScreen() {
               <Text style={styles.searchResultPronunciation}>
                 {searchResult.pronunciation}
               </Text>
-              <Text style={styles.partOfSpeech}>
+              <Text style={styles.partOfSpeechResult}>
                 {searchResult.partOfSpeech}
               </Text>
             </View>
             <TouchableOpacity
-              style={styles.playButton}
+              style={styles.playButtonCircle}
               onPress={e => {
                 e.stopPropagation();
                 playPronunciation(searchResult.word);
               }}
             >
-              <Volume2 size={20} color="#FF6B9D" />
+              <Volume2 size={24} color="#55BA5D" />
             </TouchableOpacity>
           </View>
 
@@ -826,7 +836,7 @@ export default function NotebookScreen() {
           disabled={isAddingWord || !user}
         >
           <LinearGradient
-            colors={["#FF6B9D", "#FF8C42"]}
+            colors={["#55BA5D", "#55BA5D"]}
             style={styles.saveButtonGradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -852,87 +862,8 @@ export default function NotebookScreen() {
 
     return (
       <View style={styles.vocabularyResultsContainer}>
-        <Text style={styles.vocabularyResultsTitle}>Saved Words</Text>
-        {filteredVocabulary.map(word => (
-          <TouchableOpacity
-            key={word.id}
-            style={styles.vocabularyResultCard}
-            onPress={() => openWordDetail(word)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.wordCardHeader}>
-              <View style={styles.wordCardInfo}>
-                <View style={styles.wordTitleRow}>
-                  <Text style={styles.wordCardTitle}>{word.word}</Text>
-                  <TouchableOpacity
-                    style={styles.favoriteButton}
-                    onPress={e => {
-                      e.stopPropagation();
-                      toggleFavorite(word.id);
-                    }}
-                  >
-                    <Star
-                      size={18}
-                      color={word.isFavorite ? "#FFD700" : "#BDC3C7"}
-                      fill={word.isFavorite ? "#FFD700" : "none"}
-                    />
-                  </TouchableOpacity>
-                </View>
-                <Text style={styles.wordCardPronunciation}>
-                  {word.pronunciation}
-                </Text>
-                {word.topic ? (
-                  <View style={styles.topicBadge}>
-                    <Hash size={12} color="#9B59B6" />
-                    <Text style={styles.topicText}>{word.topic}</Text>
-                  </View>
-                ) : null}
-              </View>
-              <TouchableOpacity
-                style={styles.playButtonSmall}
-                onPress={e => {
-                  e.stopPropagation();
-                  playPronunciation(word.word);
-                }}
-              >
-                <Volume2 size={16} color="#7F8C8D" />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.wordCardDefinition} numberOfLines={2}>
-              {word.definition}
-            </Text>
-            <View style={styles.wordCardFooter}>
-              <View style={styles.wordCardStats}>
-                <Text style={styles.dateAdded}>Added {word.dateAdded}</Text>
-                {word.reviewCount && word.reviewCount > 0 ? (
-                  <Text style={styles.reviewCount}>
-                    Reviewed {word.reviewCount} times
-                  </Text>
-                ) : null}
-              </View>
-              <View style={styles.wordActions}>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => {
-                    setEditingWord(word);
-                    setShowEditModal(true);
-                  }}
-                >
-                  <Edit3 size={16} color="#3498DB" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={e => {
-                    e.stopPropagation();
-                    deleteWord(word.id);
-                  }}
-                >
-                  <Trash2 size={16} color="#E74C3C" />
-                </TouchableOpacity>
-              </View>
-            </View>
-          </TouchableOpacity>
-        ))}
+        <Text style={styles.vocabularyResultsTitle}>Từ vựng đã lưu</Text>
+        {filteredVocabulary.map(renderWordCard)}
       </View>
     );
   };
@@ -944,77 +875,31 @@ export default function NotebookScreen() {
       onPress={() => openWordDetail(word)}
       activeOpacity={0.7}
     >
-      <View style={styles.wordCardHeader}>
+      <View style={styles.wordCardMain}>
         <View style={styles.wordCardInfo}>
           <View style={styles.wordTitleRow}>
             <Text style={styles.wordCardTitle}>{word.word}</Text>
             <TouchableOpacity
-              style={styles.favoriteButton}
+              style={styles.playButtonInline}
               onPress={e => {
                 e.stopPropagation();
-                toggleFavorite(word.id);
+                playPronunciation(word.word);
               }}
             >
-              <Star
-                size={18}
-                color={word.isFavorite ? "#FFD700" : "#BDC3C7"}
-                fill={word.isFavorite ? "#FFD700" : "none"}
-              />
+              <Volume2 size={22} color="#55BA5D" />
             </TouchableOpacity>
           </View>
-          <Text style={styles.wordCardPronunciation}>{word.pronunciation}</Text>
-          {word.topic ? (
-            <View style={styles.topicBadge}>
-              <Hash size={12} color="#9B59B6" />
-              <Text style={styles.topicText}>{word.topic}</Text>
+          <View style={styles.pronunciationRow}>
+            <Text style={styles.wordCardPronunciation}>{word.pronunciation}</Text>
+            <View style={styles.levelBadge}>
+              <Text style={styles.levelText}>C1</Text>
             </View>
-          ) : null}
+          </View>
+          <Text style={styles.wordCardDefinition} numberOfLines={2}>
+            {word.definition}
+          </Text>
         </View>
-        <TouchableOpacity
-          style={styles.playButtonSmall}
-          onPress={e => {
-            e.stopPropagation();
-            playPronunciation(word.word);
-          }}
-        >
-          <Volume2 size={16} color="#7F8C8D" />
-        </TouchableOpacity>
-      </View>
-
-      <Text style={styles.wordCardDefinition} numberOfLines={2}>
-        {word.definition}
-      </Text>
-
-      <View style={styles.wordCardFooter}>
-        <View style={styles.wordCardStats}>
-          <Text style={styles.dateAdded}>Added {word.dateAdded}</Text>
-          {word.reviewCount && word.reviewCount > 0 ? (
-            <Text style={styles.reviewCount}>
-              Reviewed {word.reviewCount} times
-            </Text>
-          ) : null}
-        </View>
-        <View style={styles.wordActions}>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={e => {
-              e.stopPropagation();
-              setEditingWord(word);
-              setShowEditModal(true);
-            }}
-          >
-            <Edit3 size={16} color="#3498DB" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={e => {
-              e.stopPropagation();
-              deleteWord(word.id);
-            }}
-          >
-            <Trash2 size={16} color="#E74C3C" />
-          </TouchableOpacity>
-        </View>
+        <ChevronRight size={24} color="#D1D5DB" />
       </View>
     </TouchableOpacity>
   );
@@ -1105,7 +990,7 @@ export default function NotebookScreen() {
             ]}
           >
             <LinearGradient
-              colors={["#FF6B9D", "#FF8C42"]}
+              colors={["#55BA5D", "#45A049"]}
               style={styles.cardGradient}
             >
               <View style={styles.cardContent}>
@@ -1163,61 +1048,89 @@ export default function NotebookScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
       <View style={{ flex: 1 }}>
-      {isLoadingVocabs && (
-        <View style={styles.loadingOverlay}>
-          <Text style={styles.loadingOverlayText}>
-            Loading your vocabulary... 📚
-          </Text>
-        </View>
-      )}
-      <ScrollView
-        style={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header (Matching Explore Screen) */}
+        {isLoadingVocabs && (
+          <View style={styles.loadingOverlay}>
+            <Text style={styles.loadingOverlayText}>
+              Loading your vocabulary... 📚
+            </Text>
+          </View>
+        )}
+
+        {/* Fixed Header */}
         <View style={styles.headerContainer}>
-          <Text style={styles.headerTitle}>Sổ tay</Text>
+          <TouchableOpacity onPress={() => {/* Handle back */}}>
+            <ArrowLeft size={24} color="#1F2937" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Từ Điển</Text>
           <View style={styles.headerIcons}>
             <View style={styles.flameContainer}>
-              <Flame size={20} color="#EA580C" fill="#EA580C" />
+              <Flame size={18} color="#EA580C" fill="#EA580C" />
               <Text style={styles.flameText}>5</Text>
             </View>
             <TouchableOpacity>
-              <Bell size={24} color="#55BA5D" />
+              <Bell size={22} color="#55BA5D" />
             </TouchableOpacity>
           </View>
         </View>
-        <View style={styles.searchSection}>
-          <View style={styles.searchContainer}>
-            <Search size={20} color="#7F8C8D" />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search for a word..."
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholderTextColor="#95A5A6"
-            />
-            {isSearching ? (
-              <View style={styles.loadingIndicator}>
-                <Text style={styles.loadingText}>🔍</Text>
+
+        <ScrollView
+          style={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.searchSection}>
+            <View style={styles.searchContainer}>
+              <Search size={22} color="#55BA5D" />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Tìm kiếm từ vựng..."
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholderTextColor="#9CA3AF"
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity 
+                   onPress={() => {
+                     setSearchQuery("");
+                     setSearchResult(null);
+                   }}
+                   style={styles.clearButton}
+                >
+                  <X size={18} color="#9CA3AF" />
+                </TouchableOpacity>
+              )}
+              {isSearching ? (
+                <View style={styles.loadingIndicator}>
+                  <Text style={styles.loadingText}>🔍</Text>
+                </View>
+              ) : null}
+            </View>
+
+            {renderVocabularyResults()}
+
+            {renderSearchResult()}
+
+            {!searchQuery && !searchResult && (
+              <View style={styles.mainMascotSection}>
+                <Image
+                  source={require("../../assets/images/mascot/dictionary.png")}
+                  style={styles.mainMascotImage}
+                  resizeMode="contain"
+                />
+                <Text style={styles.mainMascotTitle}>
+                  Tìm kiếm bất kỳ từ nào và lưu vào bộ sưu tập của bạn!
+                </Text>
+                <Text style={styles.mainMascotSubtitle}>
+                  Mochi rất hào hứng giúp bạn xây dựng vốn từ vựng! ✨
+                </Text>
               </View>
-            ) : null}
+            )}
           </View>
-
-          {renderVocabularyResults()}
-
-          {renderSearchResult()}
-
-          {!searchQuery && !searchResult && filteredVocabulary.length === 0
-            ? renderEmptyState()
-            : null}
-        </View>
 
         {myVocabs.length > 0 ? (
           <View style={styles.reviewSection}>
             <TouchableOpacity style={styles.reviewCard} onPress={startReview}>
               <LinearGradient
-                colors={["#2ECC71", "#27AE60"]}
+                colors={["#55BA5D", "#45A049"]}
                 style={styles.reviewGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -1243,24 +1156,24 @@ export default function NotebookScreen() {
                 style={
                   [
                     styles.tab,
-                    selectedTab === "myVocabs" ? styles.activeTab : null,
+                    selectedTab === "myVocabs" ? styles.activeTab : styles.inactiveTab,
                   ].filter(Boolean) as any
                 }
                 onPress={() => setSelectedTab("myVocabs")}
               >
                 <BookOpen
-                  size={16}
-                  color={selectedTab === "myVocabs" ? "#FFFFFF" : "#7F8C8D"}
+                  size={18}
+                  color={selectedTab === "myVocabs" ? "#FFFFFF" : "#6B7280"}
                 />
                 <Text
                   style={
                     [
                       styles.tabText,
-                      selectedTab === "myVocabs" ? styles.activeTabText : null,
+                      selectedTab === "myVocabs" ? styles.activeTabText : styles.inactiveTabText,
                     ].filter(Boolean) as any
                   }
                 >
-                  My Vocabs
+                  Từ vựng của tôi
                 </Text>
               </TouchableOpacity>
 
@@ -1268,49 +1181,40 @@ export default function NotebookScreen() {
                 style={
                   [
                     styles.tab,
-                    selectedTab === "recent" ? styles.activeTab : null,
+                    selectedTab === "recent" ? styles.activeTab : styles.inactiveTab,
                   ].filter(Boolean) as any
                 }
                 onPress={() => setSelectedTab("recent")}
               >
                 <Clock
-                  size={16}
-                  color={selectedTab === "recent" ? "#FFFFFF" : "#7F8C8D"}
+                  size={18}
+                  color={selectedTab === "recent" ? "#FFFFFF" : "#6B7280"}
                 />
                 <Text
                   style={
                     [
                       styles.tabText,
-                      selectedTab === "recent" ? styles.activeTabText : null,
+                      selectedTab === "recent" ? styles.activeTabText : styles.inactiveTabText,
                     ].filter(Boolean) as any
                   }
                 >
-                  Recently Added
+                  Vừa thêm
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={
                   [
                     styles.tab,
-                    selectedTab === "fav" ? styles.activeTab : null,
+                    selectedTab === "fav" ? styles.activeTab : styles.inactiveTab,
+                    { paddingHorizontal: 12 }
                   ].filter(Boolean) as any
                 }
                 onPress={() => setSelectedTab("fav")}
               >
                 <Star
-                  size={16}
-                  color={selectedTab === "fav" ? "#FFFFFF" : "#7F8C8D"}
+                  size={18}
+                  color={selectedTab === "fav" ? "#FFFFFF" : "#6B7280"}
                 />
-                <Text
-                  style={
-                    [
-                      styles.tabText,
-                      selectedTab === "fav" ? styles.activeTabText : null,
-                    ].filter(Boolean) as any
-                  }
-                >
-                  Favourite
-                </Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -1319,46 +1223,61 @@ export default function NotebookScreen() {
         <View style={styles.wordsSection}>
           <View style={styles.wordsSectionHeader}>
             <Text style={styles.wordsSectionTitle}>
-              {selectedTab === "fav" ? "Favourite Words" : null}
-              {selectedTab === "myVocabs" ? "My Vocabulary" : null}
-              {selectedTab === "topic" ? "Organized by Topic" : null}
-              {selectedTab === "recent" ? "Recently Added" : null}
+              {selectedTab === "fav" ? "Từ vựng yêu thích" : null}
+              {selectedTab === "myVocabs" ? "Từ vựng của tôi" : null}
+              {selectedTab === "topic" ? "Theo chủ đề" : null}
+              {selectedTab === "recent" ? "Vừa thêm gần đây" : null}
             </Text>
             <Text style={styles.wordsCount}>
-              ({getFilteredWords().length} words)
+              ({getFilteredWords().length} từ)
             </Text>
           </View>
 
-          {getFilteredWords().map(renderWordCard)}
+          {getFilteredWords().length > 0 ? (
+            getFilteredWords().map(renderWordCard)
+          ) : (
+            <>
+              {/* Mock data if empty */}
+              {[
+                {
+                  id: "mock1",
+                  word: "Persistence",
+                  pronunciation: "/pəˈsɪstəns/",
+                  definition: "The quality that allows someone to continue doing something even though it is difficult or opposed by other people.",
+                  example: "Her persistence finally paid off when she got the job.",
+                  topic: "Personality",
+                  dateAdded: "2024-04-12",
+                  isFavorite: true,
+                },
+                {
+                  id: "mock2",
+                  word: "Eloquence",
+                  pronunciation: "/ˈeləkwəns/",
+                  definition: "The ability to speak or write well and in an effective way.",
+                  example: "He spoke with such eloquence that everyone was moved.",
+                  topic: "Communication",
+                  dateAdded: "2024-04-12",
+                  isFavorite: false,
+                },
+                {
+                  id: "mock3",
+                  word: "Resilience",
+                  pronunciation: "/rɪˈzɪliəns/",
+                  definition: "The capacity to recover quickly from difficulties; toughness.",
+                  example: "The community showed great resilience after the disaster.",
+                  topic: "Psychology",
+                  dateAdded: "2024-04-12",
+                  isFavorite: false,
+                }
+              ].map(word => renderWordCard(word as Word))}
+            </>
+          )}
         </View>
 
         <View style={styles.bottomPadding} />
       </ScrollView>
 
-      <Animated.View style={[styles.fab, { transform: [{ scale: fabScale }] }]}>
-        <TouchableOpacity
-          onPress={() => {
-            if (!user) {
-              Alert.alert(
-                "Login Required",
-                "Please log in to add words to your vocabulary."
-              );
-              return;
-            }
-            setShowAddModal(true);
-          }}
-          style={!user ? styles.disabledButton : undefined}
-        >
-          <LinearGradient
-            colors={["#2ECC71", "#27AE60"]}
-            style={styles.fabGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <Plus size={24} color="#FFFFFF" />
-          </LinearGradient>
-        </TouchableOpacity>
-      </Animated.View>
+      {/* FAB removed as requested */}
 
       <Modal
         visible={showAddModal}
@@ -1635,20 +1554,22 @@ export default function NotebookScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: "#FFFFFF",
   },
   headerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
-    marginTop: 16,
+    marginTop: 20,
     marginBottom: 20,
   },
   headerTitle: {
     fontFamily: "Lexend_700Bold",
-    fontSize: 26,
-    color: "#0F172A",
+    fontSize: 24,
+    color: "#1F2937",
+    flex: 1,
+    marginLeft: 12,
   },
   headerIcons: {
     flexDirection: "row",
@@ -1670,26 +1591,47 @@ const styles = StyleSheet.create({
   },
   searchSection: {
     paddingHorizontal: 20,
-    marginTop: 20,
   },
-  searchContainer: {
+   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    backgroundColor: "#F0F9F1",
+    borderRadius: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  clearButton: {
+    padding: 4,
+    marginLeft: 4,
+  },
+  mainMascotSection: {
+    alignItems: "center",
+    paddingVertical: 30,
+    paddingHorizontal: 30,
+  },
+  mainMascotImage: {
+    width: 230,
+    height: 180,
+  },
+  mainMascotTitle: {
+    fontFamily: "Lexend_700Bold",
+    fontSize: 18,
+    color: "#1F2937",
+    textAlign: "center",
+    marginVertical: 12,
+    lineHeight: 24,
+  },
+  mainMascotSubtitle: {
+    fontFamily: "Lexend_400Regular",
+    fontSize: 15,
+    color: "#9CA3AF",
+    textAlign: "center",
   },
   searchInput: {
     flex: 1,
     marginLeft: 12,
     fontSize: 16,
-    color: "#2C3E50",
+    color: "#1F2937",
   },
   loadingIndicator: {
     marginLeft: 8,
@@ -1699,61 +1641,57 @@ const styles = StyleSheet.create({
   },
   searchResultCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 20,
+    padding: 24,
     marginTop: 16,
-    elevation: 4,
+    elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: "#FF6B9D",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
   },
   searchResultHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 12,
+    marginBottom: 20,
   },
   searchResultInfo: {
     flex: 1,
   },
+  playButtonCircle: {
+    backgroundColor: "rgba(85, 186, 93, 0.1)",
+    borderRadius: 25,
+    width: 50,
+    height: 50,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   searchResultWord: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#2C3E50",
-    marginBottom: 4,
+    fontFamily: "Lexend_700Bold",
+    fontSize: 28,
+    color: "#1F2937",
+    marginBottom: 8,
   },
   searchResultPronunciation: {
-    fontSize: 16,
-    color: "#7F8C8D",
-    fontStyle: "italic",
+    fontSize: 18,
+    color: "#6B7280",
     marginBottom: 4,
   },
-  partOfSpeech: {
+  partOfSpeechResult: {
+    fontFamily: "Lexend_700Bold",
     fontSize: 14,
-    color: "#9B59B6",
-    fontWeight: "600",
+    color: "#55BA5D",
     textTransform: "uppercase",
-  },
-  playButton: {
-    backgroundColor: "rgba(255, 107, 157, 0.1)",
-    borderRadius: 20,
-    padding: 8,
-    zIndex: 20,
-    width: 40,
-    marginLeft: "auto",
-    marginRight: "auto",
   },
   searchResultDefinition: {
     fontSize: 16,
-    color: "#2C3E50",
+    color: "#4B5563",
     lineHeight: 24,
     marginBottom: 16,
   },
   exampleContainer: {
-    backgroundColor: "#F8F9FA",
+    backgroundColor: "#F9FAFB",
     borderRadius: 12,
     padding: 12,
     marginBottom: 16,
@@ -1761,12 +1699,12 @@ const styles = StyleSheet.create({
   exampleLabel: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#7F8C8D",
+    color: "#9CA3AF",
     marginBottom: 4,
   },
   searchResultExample: {
     fontSize: 14,
-    color: "#2C3E50",
+    color: "#374151",
     fontStyle: "italic",
     lineHeight: 20,
   },
@@ -1778,7 +1716,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
   },
   saveButtonText: {
@@ -1798,24 +1736,20 @@ const styles = StyleSheet.create({
   },
   vocabularyResultCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    elevation: 3,
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 16,
+    elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    borderLeftWidth: 4,
-    borderLeftColor: "#2ECC71",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
   emptyState: {
     alignItems: "center",
     paddingVertical: 40,
-  },
-  emptyMascot: {
-    fontSize: 60,
-    marginBottom: 16,
   },
   emptyTitle: {
     fontSize: 18,
@@ -1835,13 +1769,13 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   reviewCard: {
-    borderRadius: 16,
+    borderRadius: 20,
     overflow: "hidden",
     elevation: 4,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
   },
   reviewGradient: {
     padding: 20,
@@ -1866,7 +1800,8 @@ const styles = StyleSheet.create({
     opacity: 0.9,
   },
   tabSection: {
-    marginTop: 30,
+    marginTop: 20,
+    marginBottom: 15,
   },
   tabContainer: {
     flexDirection: "row",
@@ -1875,32 +1810,33 @@ const styles = StyleSheet.create({
   tab: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    marginRight: 12,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    marginRight: 15,
   },
   activeTab: {
-    backgroundColor: "#FF6B9D",
+    backgroundColor: "#55BA5D",
+  },
+  inactiveTab: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
   tabText: {
     fontSize: 14,
-    color: "#7F8C8D",
-    fontWeight: "600",
+    fontWeight: "700",
     marginLeft: 6,
   },
   activeTabText: {
     color: "#FFFFFF",
   },
+  inactiveTabText: {
+    color: "#6B7280",
+  },
   wordsSection: {
     paddingHorizontal: 20,
-    marginTop: 25,
+    paddingTop: 8,
   },
   wordsSectionHeader: {
     flexDirection: "row",
@@ -1908,31 +1844,32 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   wordsSectionTitle: {
+    fontFamily: "Lexend_700Bold",
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#2C3E50",
+    color: "#1F2937",
   },
   wordsCount: {
     fontSize: 14,
-    color: "#7F8C8D",
+    color: "#9CA3AF",
     marginLeft: 8,
   },
   wordCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    elevation: 3,
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
+    elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
   },
-  wordCardHeader: {
+  wordCardMain: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 12,
   },
   wordCardInfo: {
     flex: 1,
@@ -1940,23 +1877,38 @@ const styles = StyleSheet.create({
   wordTitleRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
     marginBottom: 4,
   },
-  wordCardTitle: {
+   wordCardTitle: {
+    fontFamily: "Lexend_700Bold",
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#2C3E50",
-    flex: 1,
+    color: "#1F2937",
+    marginRight: 8,
   },
-  favoriteButton: {
-    padding: 4,
+  playButtonInline: {
+    marginLeft: 4,
+  },
+  pronunciationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
   },
   wordCardPronunciation: {
-    fontSize: 14,
-    color: "#7F8C8D",
+    fontSize: 16,
+    color: "#6B7280",
     fontStyle: "italic",
-    marginBottom: 6,
+  },
+  levelBadge: {
+    backgroundColor: "rgba(85, 186, 93, 0.1)",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginLeft: 10,
+  },
+  levelText: {
+    color: "#55BA5D",
+    fontSize: 12,
+    fontWeight: "bold",
   },
   topicBadge: {
     flexDirection: "row",
@@ -1979,10 +1931,10 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   wordCardDefinition: {
+    fontFamily: "Lexend_400Regular",
     fontSize: 14,
-    color: "#2C3E50",
+    color: "#4B5563",
     lineHeight: 20,
-    marginBottom: 12,
   },
   wordCardFooter: {
     flexDirection: "row",
@@ -2311,7 +2263,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#E74C3C",
   },
   correctButton: {
-    backgroundColor: "#2ECC71",
+    backgroundColor: "#55BA5D",
   },
   answerButtonText: {
     fontSize: 16,
