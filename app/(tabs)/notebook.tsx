@@ -7,8 +7,6 @@ import {
   CircleX,
   Clock,
   CreditCard as Edit3,
-  Flame,
-  Bell,
   Hash,
   Plus,
   Save,
@@ -18,7 +16,6 @@ import {
   Volume2,
   X,
   ChevronRight,
-  ArrowLeft,
 } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -35,6 +32,7 @@ import {
   View,
   StatusBar,
 } from "react-native";
+import HeaderWithBack from "../components/HeaderWithBack";
 
 import { WordDetailModal } from "../../components/WordDetailModal";
 import { useAuth } from "../../contexts/AuthContext";
@@ -1057,21 +1055,7 @@ export default function NotebookScreen() {
         )}
 
         {/* Fixed Header */}
-        <View style={styles.headerContainer}>
-          <TouchableOpacity onPress={() => {/* Handle back */}}>
-            <ArrowLeft size={24} color="#1F2937" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Từ Điển</Text>
-          <View style={styles.headerIcons}>
-            <View style={styles.flameContainer}>
-              <Flame size={18} color="#EA580C" fill="#EA580C" />
-              <Text style={styles.flameText}>5</Text>
-            </View>
-            <TouchableOpacity>
-              <Bell size={22} color="#55BA5D" />
-            </TouchableOpacity>
-          </View>
-        </View>
+        <HeaderWithBack title="Từ điển" />
 
         <ScrollView
           style={styles.scrollContainer}
@@ -1126,7 +1110,8 @@ export default function NotebookScreen() {
             )}
           </View>
 
-        {myVocabs.length > 0 ? (
+        {/* Review Flashcards hidden as requested */}
+        {false && myVocabs.length > 0 ? (
           <View style={styles.reviewSection}>
             <TouchableOpacity style={styles.reviewCard} onPress={startReview}>
               <LinearGradient
